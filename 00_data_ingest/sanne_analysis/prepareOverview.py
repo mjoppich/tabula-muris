@@ -113,7 +113,6 @@ if __name__ == '__main__':
         totalIntersect = totalIntersect.intersection(method2de[method])
 
     #print(totalIntersect)
-
     vennDiagPath = plotVennDiag(method2de, args.name, args.output)
 
     outDF = DataFrame()
@@ -137,6 +136,33 @@ if __name__ == '__main__':
 
             #print(geneID, method, geneMethodLine[methodIdx['p_val_adj']], geneMethodLine[methodIdx['avg_logFC']])
         
+
+
+    (fdHead, fdBody) = (None, "")
+
+    if "facs" in foundMethods and "droplet" in foundMethods:
+
+        outFDDF = DataFrame()
+        outFDDF.addColumns(["GeneID", "Method", "Adjusted P-Value", "Average logFC"])
+
+        for geneID in totalIntersect:
+            for method in ["facs", "droplet"]:
+
+                geneMethodLine = method2line[method][geneID]
+                methodIdx = method2idx[method]
+
+                dfDict = {
+                    "GeneID": geneID,
+                    "Method": method,
+                    "Adjusted P-Value": geneMethodLine[methodIdx['p_val_adj']],
+                    "Average logFC": geneMethodLine[methodIdx['avg_logFC']]
+                }
+
+                dr = DataRow.fromDict(dfDict)
+                outFDDF.addRow(dr)
+        
+        (fdHead, fdBody) = outFDDF._makeHTMLString("fdtable")
+
 
     combinedDF = DataFrame()
     combinedDF.addColumns(["GeneID", "Method", "Adjusted P-Value", "Average logFC"])
@@ -165,5 +191,12 @@ if __name__ == '__main__':
     (headCombined, bodyCombined) = combinedDF._makeHTMLString("combdf")
 
 
-    args.output.write("<html><head>"+head + "</head><body><h1>Differential Gene Overlap</h1><img src=\"./"+os.path.basename(vennDiagPath)+"\"/><h1>Tabular Overview</h1>"+body + "<h1>Combined Overview</h1>"+bodyCombined + "</body></html>")
+    args.output.write("<html><head>"+head + "</head><body><h1>Differential Gene Overlap</h1><img src=\"./"+os.path.basename(vennDiagPath)+"\"/>")
+    args.output.write("<h1>Tabular Overview</h1>"+body)
+
+    if fdHead != None:
+        args.output.write("<h1>FACS/Droplet Overview</h1>"+fdBody)
+
+    args.output.write("<h1>Combined Overview</h1>"+bodyCombined)
+    args.output.write("</body></html>")
     
