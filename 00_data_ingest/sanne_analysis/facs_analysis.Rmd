@@ -1,0 +1,468 @@
+---
+title: "FACS analysis"
+output: html_document
+---
+
+```{r}
+
+install.packages(c("useful", "ontologyIndex", "tidyverse"))
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("DESeq2", version = "3.8")
+
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("MAST", version = "3.8")
+
+```
+
+```{r include=FALSE}
+
+library(here)
+library(Seurat)
+source(here("00_data_ingest", "02_tissue_analysis_rmd", "boilerplate.R"))
+
+tissues_of_interest = c("Aorta", "Lung", "Large_Intestine", "Kidney", "Bladder", "Liver")
+
+processSeurat = function(facsTiss, scale){
+  facsTiss <- NormalizeData(object = facsTiss, scale.factor = scale)
+  facsTiss <- ScaleData(object = facsTiss)
+  
+  facsTiss <- FindVariableFeatures(object = facsTiss, selection.method = 'mean.var.plot', mean.cutoff = c(0.0125, 3), dispersion.cutoff = c(0.5, Inf))
+
+  #facsTiss <- FindVariableGenes(object = facsTiss, do.plot = TRUE, x.high.cutoff = Inf, y.cutoff = 0.5)
+  facsTiss <- RunPCA(object = facsTiss, do.print = FALSE)
+  
+  facsTiss <- FindNeighbors(object = facsTiss)
+  #facsTiss <- ProjectPCA(object = facsTiss, do.print = FALSE)
+  
+  facsTiss = ProjectDim(facsTiss, reduction="pca")
+}
+
+#aorta, lung, colon (large intestine), kidney, bladder and liver
+
+```
+
+## R Markdown
+
+Here we are now loading the seurat objects
+
+```{r}
+
+all_tissues = c()
+
+for (tissue_if_interest in tissues_of_interest){
+  
+    filename = here('00_data_ingest', '04_tissue_robj_generated', paste0("facs_", tissue_if_interest, "_seurat_tiss.Robj"))
+    print(filename)
+    load(file=filename)
+    tissue_1 = UpdateSeuratObject(tiss)
+  
+    all_tissues = append(all_tissues, tissue_1)
+}
+
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r results='asis'}
+
+for (tissue_obj in all_tissues){
+  
+    plot = DimPlot(object = tissue_obj, reduction = "tsne", group.by='cell_ontology_class')
+    print(plot)
+}
+
+
+```
+
+
+```{r}
+
+facsTiss = merge(x=all_tissues[[1]], y=all_tissues[2:length(all_tissues)], add.cell.ids=tissues_of_interest)
+
+facsTiss <- processSeurat(facsTiss, 1e4)
+
+n.pcs = 20
+res.used <- 3
+
+facsTiss <- FindClusters(object = facsTiss, reduction.type = "pca", dims.use = 1:n.pcs, resolution = res.used, print.output = 0, save.SNN = TRUE)
+facsTiss <- RunTSNE(object = facsTiss, dims.use = 1:n.pcs, seed.use = 10, perplexity=30)
+
+
+
+DimPlot(object = facsTiss, reduction = "tsne", group.by='cell_ontology_class')
+
+```
+
+
+Now we must merge both object. Because cell_ontology_class is our selector, we will rename it to tissue.coc:
+
+```{r}
+
+facsTiss <- merge(x = tissue_1, y = tissue_2, add.cell.id1 = tissue_of_interest_1, add.cell.id2 = tissue_of_interest_2, project = "EC_AORTA_LUNG")
+
+#facsTiss = stash_annotations(facsTiss, cluster.ids, free_annotation, cell_ontology_class)
+#
+
+```
+```{r}
+
+setCellIdent <- function (object, idp1, idp2) 
+{
+	
+	cells.use <- rownames(x = object@meta.data)
+	ident.use <- paste(object@meta.data[, idp1], object@meta.data[, idp2], sep=".")
+	Idents(object = object, cells.use = cells.use)= ident.use
+	
+	return(object)
+}
+
+
+```
+
+
+```{r}
+facsTiss <- setCellIdent(object = facsTiss, idp1="orig.ident", idp2= "cell_ontology_class")
+
+table(Idents(facsTiss))
+
+```
+
+
+Eventually we can now perform DE analysis:
+
+
+```{r}
+
+tissues_of_interest = c("Aorta", "Lung", "Large_Intestine", "Kidney", "Bladder", "Liver")
+
+facsAortaEndo = c("Aorta.endothelial cell")
+facsAortaEpi = c("Aorta.erythrocyte")
+
+facsLungEndo = c("Lung.lung endothelial cell")
+facsLungEpi = c("Lung.epithelial cell of lung")
+
+facsLintEndo = c()
+facsLintEpi = c("Large_Intestine.epithelial cell of large intestine")
+
+facsKidneyEndo = c("Kidney.endothelial cell")
+facsKidneyEpi = c("Kidney.kidney collecting duct epithelial cell","Kidney.epithelial cell of proximal tubule")
+
+facsBladderEndo = c("Bladder.bladder urothelial cell")
+facsBladderEpi = c("Bladder.bladder cell")
+
+facsLiverEndo = c("Liver.endothelial cell of hepatic sinusoid")
+facsLiverEpi = c("Liver.hepatocyte")
+
+
+facsAortaCells = c(facsAortaEndo,facsAortaEpi)
+facsLungCells = c(facsLungEndo,facsLungEpi)
+facsLintCells = c(facsLintEndo,facsLintEpi)
+facsKidneyCells = c(facsKidneyEndo,facsKidneyEpi)
+facsBladderCells = c(facsBladderEndo,facsBladderEpi)
+facsLiverCells = c(facsLiverEndo, facsLiverEpi)
+
+
+facsAllAorta = unique(grep(pattern="Neonatal-Heart", x=facsTiss@meta.data$Annotation, value = TRUE))
+facsAllAorta = setdiff(facsAllAorta, facsAortaCells)
+
+facsAllLung = unique(grep(pattern="Lung", x=facsTiss@meta.data$Annotation, value = TRUE))
+facsAllLung = setdiff(facsAllLung, facsLungCells)
+
+facsAllLint = unique(grep(pattern="[Small|Fetal][_-]Intestine", x=facsTiss@meta.data$Annotation, value = TRUE))
+facsAllLint = setdiff(facsAllLint, facsLintCells)
+
+facsAllKidney = unique(grep(pattern="Kidney", x=facsTiss@meta.data$Annotation, value = TRUE))
+facsAllKidney = setdiff(facsAllKidney, facsKidneyCells)
+
+facsAllBladder = unique(grep(pattern="Bladder", x=facsTiss@meta.data$Annotation, value = TRUE))
+facsAllBladder = setdiff(facsAllBladder, facsBladderCells)
+
+facsAllLiver = unique(grep(pattern="Liver", x=facsTiss@meta.data$Annotation, value = TRUE))
+facsAllLiver = setdiff(facsAllLiver, facsLiverCells)
+
+```
+
+We should prepare our functions again ....
+
+```{r}
+
+makeAnalysis <- function( tissues1, tissues2)
+{
+  
+    if (is.null(tissues1)|| is.null(tissues2))
+    {
+      return(NULL)
+    }
+  
+    if (length(tissues1) == 0 || length(tissues2) == 0)
+    {
+      return(NULL)
+    }
+  
+    newMarkers = FindMarkers(facsTiss, ident.1=tissues1, ident.2=tissues2,only.pos=TRUE, test.use="MAST")
+    return(newMarkers)
+}
+
+```
+
+
+Now we can run the analysis against each other ...
+
+# Analysis: Endothelial Cells against each other
+
+
+## Aorta vs Lung
+
+```{r}
+
+aorta_lung_markers_facs = makeAnalysis(facsAortaEndo, facsLungEndo)
+
+write.table(aorta_lung_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("aorta_lung_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+```
+
+## Aorta vs Lint
+
+```{r}
+
+aorta_lint_markers_facs = makeAnalysis(facsAortaEndo, facsLintEndo)
+
+write.table(aorta_lint_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("aorta_lint_markers_facs",".tsv", sep="")) ,quote=FALSE, sep='\t')
+```
+
+## Aorta vs Kidney
+```{r}
+
+aorta_kidney_markers_facs = makeAnalysis(facsAortaEndo, facsKidneyEndo)
+
+write.table(aorta_kidney_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("aorta_kidney_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+```
+
+## Aorta vs Bladder
+
+```{r}
+
+aorta_bladder_markers_facs = makeAnalysis(facsAortaEndo, facsBladderEndo)
+
+write.table(aorta_bladder_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("aorta_bladder_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+```
+
+## Aorta vs Liver
+
+```{r}
+
+aorta_liver_markers_facs = makeAnalysis(facsAortaEndo, facsLiverEndo)
+
+write.table(aorta_liver_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("aorta_liver_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+```
+
+## Lung vs Lint
+
+```{r}
+
+lung_lint_markers_facs = makeAnalysis(facsLungEndo, facsLintEndo)
+
+write.table(lung_lint_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("lung_lint_markers_facs",".tsv", sep="")) ,quote=FALSE, sep='\t')
+```
+
+## Lung vs Kidney
+```{r}
+
+lung_kidney_markers_facs = makeAnalysis(facsLungEndo, facsKidneyEndo)
+
+write.table(lung_kidney_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("lung_kidney_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+```
+
+## Lung vs Bladder
+
+```{r}
+
+lung_bladder_markers_facs = makeAnalysis(facsLungEndo, facsBladderEndo)
+
+write.table(lung_bladder_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("lung_bladder_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+```
+
+## Lung vs Liver
+
+```{r}
+
+lung_liver_markers_facs = makeAnalysis(facsLungEndo, facsLiverEndo)
+
+write.table(lung_liver_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("lung_liver_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+```
+
+
+## Lint vs Kidney
+
+```{r}
+
+lint_kidney_markers_facs = makeAnalysis(facsLintEndo, facsKidneyEndo)
+
+write.table(lint_kidney_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("lint_kidney_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+```
+
+## Lint vs Bladder
+
+```{r}
+
+lint_bladder_markers_facs = makeAnalysis(facsLintEndo, facsBladderEndo)
+
+write.table(lint_bladder_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("lint_bladder_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+```
+
+## Lint vs Liver
+```{r}
+
+lint_liver_markers_facs = makeAnalysis(facsLintEndo, facsLiverEndo)
+
+write.table(lint_liver_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("lint_liver_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+```
+
+## Kidney vs Bladder
+```{r}
+
+kidney_bladder_markers_facs = makeAnalysis(facsKidneyEndo, facsBladderEndo)
+
+write.table(kidney_bladder_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("kidney_bladder_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+```
+
+## Kidney vs Liver
+
+```{r}
+
+kidney_liver_markers_facs = makeAnalysis(facsKidneyEndo, facsLiverEndo)
+
+write.table(kidney_liver_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("kidney_liver_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+```
+
+## Bladder vs Liver
+```{r}
+
+bladder_liver_markers_facs = makeAnalysis(facsBladderEndo, facsLiverEndo)
+
+write.table(bladder_liver_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("bladder_liver_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+```
+
+# Analysis same organ, endo vs epi
+
+## Aorta Endo vs Aorta Epi
+```{r}
+
+aorta_endopi_markers_facs = makeAnalysis(facsAortaEndo, facsAortaEpi)
+
+write.table(aorta_endopi_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("aorta_endopi_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+
+```
+
+## Bladder Endo vs Bladder Epi
+```{r}
+
+bladder_endopi_markers_facs = makeAnalysis(facsBladderEndo, facsBladderEpi)
+
+write.table(bladder_endopi_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("bladder_endopi_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+
+```
+
+## Kidney Endo vs Kidney Epi
+```{r}
+
+kidney_endopi_markers_facs = makeAnalysis(facsKidneyEndo, facsKidneyEpi)
+
+write.table(kidney_endopi_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("kidney_endopi_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+
+```
+
+## Lint Endo vs Lint Epi
+```{r}
+
+lint_endopi_markers_facs = makeAnalysis(facsLintEndo, facsLintEpi)
+
+write.table(lint_endopi_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("lint_endopi_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+
+```
+
+## Liver Endo vs Liver Epi
+```{r}
+
+liver_endopi_markers_facs = makeAnalysis(facsLiverEndo, facsLiverEpi)
+
+write.table(liver_endopi_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("liver_endopi_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+
+```
+
+## Lung Endo vs Lung Epi
+```{r}
+
+lung_endopi_markers_facs = makeAnalysis(facsLungEndo, facsLungEpi)
+
+write.table(lung_endopi_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("lung_endopi_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+
+```
+
+# Analysis same organ, endo vs rest+epi
+
+## Aorta Endo
+
+```{r}
+
+aorta_endo_rest_markers_facs = makeAnalysis(facsAortaEndo, unique(c(facsAllAorta, facsAortaEpi)))
+
+write.table(aorta_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("aorta_endo_rest_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+
+```
+## Bladder Endo
+
+```{r}
+
+bladder_endo_rest_markers_facs = makeAnalysis(facsBladderEndo, unique(c(facsAllBladder, facsBladderEpi)))
+
+write.table(bladder_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("bladder_endo_rest_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+
+```
+
+## Kidney Endo
+
+```{r}
+
+kidney_endo_rest_markers_facs = makeAnalysis(facsKidneyEndo, unique(c(facsAllKidney, facsKidneyEpi)))
+
+write.table(kidney_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("kidney_endo_rest_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+
+```
+
+## Lint Endo
+
+```{r}
+
+lint_endo_rest_markers_facs = makeAnalysis(facsLintEndo, unique(c(facsAllLint, facsLintEpi)))
+
+write.table(lint_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("lint_endo_rest_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+
+```
+
+## Liver Endo
+
+```{r}
+
+liver_endo_rest_markers_facs = makeAnalysis(facsLiverEndo, unique(c(facsAllLiver, facsLiverEpi)))
+
+write.table(liver_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("liver_endo_rest_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+
+```
+
+## Lung Endo
+
+```{r}
+
+
+lung_endo_rest_markers_facs = makeAnalysis(facsLungEndo, unique(c(facsAllLung, facsLungEpi)))
+
+write.table(lung_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("lung_endo_rest_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+
+```

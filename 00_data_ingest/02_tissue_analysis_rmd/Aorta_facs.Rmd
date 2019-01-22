@@ -1,8 +1,8 @@
 ---
 title: "Aorta facs Notebook"
 output:
-  html_document: default
   html_notebook: default
+  html_document: default
 ---
 
 Specify the tissue of interest, run the boilerplate code which sets up the functions and environment, load the tissue object.
@@ -51,6 +51,7 @@ TSNEPlot(object = tiss, do.return = TRUE, group.by = "mouse.id")
 ```
 
 ```{r}
+FeaturePlot(tiss, "Cxcr4")
 FeaturePlot(tiss, "Alas2")
 FeaturePlot(tiss, "Pecam1")
 FeaturePlot(tiss, "H2-Aa")
@@ -60,7 +61,7 @@ FeaturePlot(tiss, "H2-Ab1")
 
 Check expression of genes of interset.
 
-```{r, echo=FALSE, fig.height=12, fig.width=8}
+```{r, echo=FALSE, fig.height=25, fig.width=8}
 genes_to_check = c('Vim','Krt5','Krt8','Ptprc','Epcam','H2-Ab1','H2-Aa','Cd34','Cdh5','Cd14','Vwf','Syk','Col1a2','Timp2','Cd74',
                    'Laptm5','Selplg','Pecam1','Fabp4','Sox18','Icam1','Tek','Vcam1','Vegfa','Adipor1','Car3','Alas2','Acta2',
                    'Dcn','Myocd','Tagln','Myh11','S100a4','Cd3e','Pdgfra','Kit','Gypa','Col6a3','Fap')
@@ -69,12 +70,18 @@ FeaturePlot(tiss, genes_to_check, pt.size = 1, nCol = 3)
 
 Dotplots let you see the intensity of expression and the fraction of cells expressing for each of your genes of interest.
 
-```{r, echo=FALSE, fig.height=8, fig.width=8}
+```{r, echo=FALSE, fig.height=16, fig.width=8}
 # To change the y-axis to show raw counts, add use.raw = T.
 #DotPlot(tiss, genes_to_check, col.max = 2.5, plot.legend = T, do.return = T) + coord_flip()
 VlnPlot(tiss, genes_to_check)
 ```
 
+
+```{r, echo=FALSE, fig.height=16, fig.width=8}
+# To change the y-axis to show raw counts, add use.raw = T.
+DotPlot(tiss, genes_to_check, col.max = 2.5, plot.legend = T, do.return = T) + coord_flip()
+#VlnPlot(tiss, genes_to_check)
+```
 How big are the clusters?
 ```{r}
 table(tiss@ident)

@@ -1,0 +1,112 @@
+---
+title: "han seurat"
+output: html_document
+---
+
+Execute for init/install only
+
+```{r}
+install.packages("here")
+install.packages('devtools')
+install.packages("Seurat", dependencies = TRUE)
+
+
+```
+
+```{r setup, include=FALSE}
+
+setwd("~/git/tabula-muris/")
+
+library(here)
+library(Seurat)
+
+```
+
+## Setup seurat object
+
+We will analyze ~242,000 cells that were assigned a cluster ID in the original study. As a result, we don't do perform additional QC steps or filtration steps here.
+
+```{r}
+
+mca.matrix <- readRDS(file = here("00_data_ingest", "han_data", "MCA", "MCA_merged_mat.rds"))
+mca.metadata <- read.csv(here("00_data_ingest", "han_data", "MCA", "MCA_CellAssignments.csv"), row.names = 1)
+
+mca <- CreateSeuratObject(counts = mca.matrix, meta.data = mca.metadata, project = "MouseCellAtlas")
+
+mca <- SubsetData(mca, cells = rownames(mca@meta.data[!is.na(mca@meta.data$ClusterID), ]), do.clean = TRUE)
+
+mca
+
+mca.matrix = 0
+
+```
+
+## Normalize Data 
+
+You can also embed plots, for example:
+
+```{r}
+
+mca <- NormalizeData(object = mca, normalization.method = "LogNormalize", scale.factor = 10000)
+
+
+mito.features <- grep(pattern = "^mt-", x = rownames(x = mca), value = TRUE)
+percent.mito <- Matrix::colSums(x = GetAssayData(object = mca, slot = 'counts')[mito.features, ]) / Matrix::colSums(x = GetAssayData(object = mca, slot = 'counts'))
+mca <- AddMetaData(object = mca, metadata = percent.mito, col.name = "percent.mito")
+
+mca <- FindVariableFeatures(object = mca, selection.method = 'mean.var.plot', mean.cutoff = c(0.0125, 3), dispersion.cutoff = c(0.5, Inf))
+length(x = VariableFeatures(object = mca))
+
+mca <- ScaleData(object = mca, features = HVFInfo(object = mca), vars.to.regress = c("percent.mito"))
+
+#mca <- FindVariableFeatures(object = mca, selection.method = "vst", nfeatures = 2000, verbose = FALSE)
+#hv.genes <- head(rownames(mca@hvg.info), 1000)
+
+#mito.genes <- grep(pattern = "^mt-", x = rownames(x = mca@data), value = TRUE)
+#percent.mito <- Matrix::colSums(mca@raw.data[mito.genes, ])/Matrix::colSums(mca@raw.data)
+#mca <- AddMetaData(object = mca, metadata = percent.mito, col.name = "percent.mito")
+
+#mca <- ScaleData(object = mca, genes.use = hv.genes, display.progress = FALSE, vars.to.regress = "percent.mito", do.par = TRUE, num.cores = 1)
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+We now prepare tSNE and run it
+
+```{r}
+
+#mca <- RunPCA(object = mca, pc.genes = hv.genes, pcs.compute = 100, do.print = TRUE, pcs.print = 1:5, genes.print = 5)
+mca <- RunPCA(object = mca, features = HVFInfo(object = mca), npcs=100, nfeatures.print=5, ndims.print=1:5)
+
+
+mca <- RunTSNE(object = mca, reduction.use = "pca", dims.use = 1:75, tsne.method = "FIt-SNE", nthreads = 4, reduction.name = "FItSNE", reduction.key = "FItSNE_", fast_tsne_path = "/mnt/d/dev/git/FIt-SNE/bin/fast_tsne", max_iter = 2000)
+
+
+mca <- RunUMAP(object = mca, reduction.use = "pca", dims.use = 1:75, min_dist = 0.75)
+
+save("mca", file=here("00_data_ingest", "sanne_analysis", "wells_han_data"))
+
+```
+```{r}
+
+unique(grep(pattern="*Fetal_Kidney*", x=unique(mca@meta.data$Annotation), value = TRUE))
+
+
+```
+
+
+```{r}
+
+grep(pattern="*[Ee]ndot*", x=unique(mca@meta.data$Annotation), value = TRUE)
+grep(pattern="*[Ee]pit*", x=unique(mca@meta.data$Annotation), value = TRUE)
+
+
+```
+```{r}
+
+sink(here("00_data_ingest", "sanne_analysis", "wells_han_cells"))
+table(mca@meta.data$Annotation)
+sink()
+
+```
