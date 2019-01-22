@@ -137,7 +137,7 @@ facsAortaEpi = c("Aorta.erythrocyte")
 facsLungEndo = c("Lung.lung endothelial cell")
 facsLungEpi = c("Lung.epithelial cell of lung")
 
-facsLintEndo = c()
+facsLintEndo = c("Large_Intestine.enterocyte of epithelium of large intestine")
 facsLintEpi = c("Large_Intestine.epithelial cell of large intestine")
 
 facsKidneyEndo = c("Kidney.endothelial cell")
@@ -158,22 +158,22 @@ facsBladderCells = c(facsBladderEndo,facsBladderEpi)
 facsLiverCells = c(facsLiverEndo, facsLiverEpi)
 
 
-facsAllAorta = unique(grep(pattern="Aorta", x=facsTiss@meta.data$Annotation, value = TRUE))
+facsAllAorta = unique(grep(pattern="Aorta", x=Idents(facsTiss), value = TRUE))
 facsAllAorta = setdiff(facsAllAorta, facsAortaCells)
 
-facsAllLung = unique(grep(pattern="Lung", x=facsTiss@meta.data$Annotation, value = TRUE))
+facsAllLung = unique(grep(pattern="Lung", x=Idents(facsTiss), value = TRUE))
 facsAllLung = setdiff(facsAllLung, facsLungCells)
 
-facsAllLint = unique(grep(pattern="Large_Intestine", x=facsTiss@meta.data$Annotation, value = TRUE))
+facsAllLint = unique(grep(pattern="Large_Intestine", x=Idents(facsTiss), value = TRUE))
 facsAllLint = setdiff(facsAllLint, facsLintCells)
 
-facsAllKidney = unique(grep(pattern="Kidney", x=facsTiss@meta.data$Annotation, value = TRUE))
+facsAllKidney = unique(grep(pattern="Kidney", x=Idents(facsTiss), value = TRUE))
 facsAllKidney = setdiff(facsAllKidney, facsKidneyCells)
 
-facsAllBladder = unique(grep(pattern="Bladder", x=facsTiss@meta.data$Annotation, value = TRUE))
+facsAllBladder = unique(grep(pattern="Bladder", x=Idents(facsTiss), value = TRUE))
 facsAllBladder = setdiff(facsAllBladder, facsBladderCells)
 
-facsAllLiver = unique(grep(pattern="Liver", x=facsTiss@meta.data$Annotation, value = TRUE))
+facsAllLiver = unique(grep(pattern="Liver", x=Idents(facsTiss), value = TRUE))
 facsAllLiver = setdiff(facsAllLiver, facsLiverCells)
 
 ```

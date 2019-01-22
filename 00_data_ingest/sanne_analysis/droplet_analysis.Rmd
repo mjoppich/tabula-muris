@@ -94,9 +94,9 @@ res.used <- 3
 dropletTiss <- FindClusters(object = dropletTiss, reduction.type = "pca", dims.use = 1:n.pcs, resolution = res.used, print.output = 0, save.SNN = TRUE)
 dropletTiss <- RunTSNE(object = dropletTiss, dims.use = 1:n.pcs, seed.use = 10, perplexity=30)
 
-
-
 DimPlot(object = dropletTiss, reduction = "tsne", group.by='cell_ontology_class')
+
+all_tissues = NULL;
 
 ```
 
@@ -159,19 +159,19 @@ dropletBladderCells = c(dropletBladderEndo,dropletBladderEpi)
 dropletLiverCells = c(dropletLiverEndo, dropletLiverEpi)
 
 
-dropletAllAorta = unique(grep(pattern="Heart", x=dropletTiss@meta.data$Annotation, value = TRUE))
+dropletAllAorta = unique(grep(pattern="Heart", x=Idents(dropletTiss), value = TRUE))
 dropletAllAorta = setdiff(dropletAllAorta, dropletAortaCells)
 
-dropletAllLung = unique(grep(pattern="Lung", x=dropletTiss@meta.data$Annotation, value = TRUE))
+dropletAllLung = unique(grep(pattern="Lung", x=Idents(dropletTiss), value = TRUE))
 dropletAllLung = setdiff(dropletAllLung, dropletLungCells)
 
-dropletAllKidney = unique(grep(pattern="Kidney", x=dropletTiss@meta.data$Annotation, value = TRUE))
+dropletAllKidney = unique(grep(pattern="Kidney", x=Idents(dropletTiss), value = TRUE))
 dropletAllKidney = setdiff(dropletAllKidney, dropletKidneyCells)
 
-dropletAllBladder = unique(grep(pattern="Bladder", x=dropletTiss@meta.data$Annotation, value = TRUE))
+dropletAllBladder = unique(grep(pattern="Bladder", x=Idents(dropletTiss), value = TRUE))
 dropletAllBladder = setdiff(dropletAllBladder, dropletBladderCells)
 
-dropletAllLiver = unique(grep(pattern="Liver", x=dropletTiss@meta.data$Annotation, value = TRUE))
+dropletAllLiver = unique(grep(pattern="Liver", x=Idents(dropletTiss), value = TRUE))
 dropletAllLiver = setdiff(dropletAllLiver, dropletLiverCells)
 
 ```
@@ -185,11 +185,13 @@ makeAnalysis <- function( tissues1, tissues2)
   
     if (is.null(tissues1)|| is.null(tissues2))
     {
+      print("makeAnalysis failed due to null tissue")
       return(NULL)
     }
   
     if (length(tissues1) == 0 || length(tissues2) == 0)
     {
+      print("makeAnalysis failed due to 0 length tissue")
       return(NULL)
     }
   
