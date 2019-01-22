@@ -100,17 +100,6 @@ DimPlot(object = facsTiss, reduction = "tsne", group.by='cell_ontology_class')
 
 ```
 
-
-Now we must merge both object. Because cell_ontology_class is our selector, we will rename it to tissue.coc:
-
-```{r}
-
-facsTiss <- merge(x = tissue_1, y = tissue_2, add.cell.id1 = tissue_of_interest_1, add.cell.id2 = tissue_of_interest_2, project = "EC_AORTA_LUNG")
-
-#facsTiss = stash_annotations(facsTiss, cluster.ids, free_annotation, cell_ontology_class)
-#
-
-```
 ```{r}
 
 setCellIdent <- function (object, idp1, idp2) 
@@ -169,13 +158,13 @@ facsBladderCells = c(facsBladderEndo,facsBladderEpi)
 facsLiverCells = c(facsLiverEndo, facsLiverEpi)
 
 
-facsAllAorta = unique(grep(pattern="Neonatal-Heart", x=facsTiss@meta.data$Annotation, value = TRUE))
+facsAllAorta = unique(grep(pattern="Aorta", x=facsTiss@meta.data$Annotation, value = TRUE))
 facsAllAorta = setdiff(facsAllAorta, facsAortaCells)
 
 facsAllLung = unique(grep(pattern="Lung", x=facsTiss@meta.data$Annotation, value = TRUE))
 facsAllLung = setdiff(facsAllLung, facsLungCells)
 
-facsAllLint = unique(grep(pattern="[Small|Fetal][_-]Intestine", x=facsTiss@meta.data$Annotation, value = TRUE))
+facsAllLint = unique(grep(pattern="Large_Intestine", x=facsTiss@meta.data$Annotation, value = TRUE))
 facsAllLint = setdiff(facsAllLint, facsLintCells)
 
 facsAllKidney = unique(grep(pattern="Kidney", x=facsTiss@meta.data$Annotation, value = TRUE))
@@ -198,11 +187,13 @@ makeAnalysis <- function( tissues1, tissues2)
   
     if (is.null(tissues1)|| is.null(tissues2))
     {
+      print("makeAnalysis failed due to null tissue")
       return(NULL)
     }
   
     if (length(tissues1) == 0 || length(tissues2) == 0)
     {
+      print("makeAnalysis failed due to 0 length tissue")
       return(NULL)
     }
   
@@ -356,7 +347,7 @@ write.table(bladder_liver_markers_facs, file = here("00_data_ingest", "sanne_ana
 
 aorta_endopi_markers_facs = makeAnalysis(facsAortaEndo, facsAortaEpi)
 
-write.table(aorta_endopi_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("aorta_endopi_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+write.table(aorta_endopi_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("aorta_endopi_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
 
 ```
 
@@ -365,7 +356,7 @@ write.table(aorta_endopi_markers_facs, file = here("00_data_ingest", "sanne_anal
 
 bladder_endopi_markers_facs = makeAnalysis(facsBladderEndo, facsBladderEpi)
 
-write.table(bladder_endopi_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("bladder_endopi_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+write.table(bladder_endopi_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("bladder_endopi_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
 
 ```
 
@@ -374,7 +365,7 @@ write.table(bladder_endopi_markers_facs, file = here("00_data_ingest", "sanne_an
 
 kidney_endopi_markers_facs = makeAnalysis(facsKidneyEndo, facsKidneyEpi)
 
-write.table(kidney_endopi_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("kidney_endopi_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+write.table(kidney_endopi_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("kidney_endopi_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
 
 ```
 
@@ -383,7 +374,7 @@ write.table(kidney_endopi_markers_facs, file = here("00_data_ingest", "sanne_ana
 
 lint_endopi_markers_facs = makeAnalysis(facsLintEndo, facsLintEpi)
 
-write.table(lint_endopi_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("lint_endopi_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+write.table(lint_endopi_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("lint_endopi_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
 
 ```
 
@@ -392,7 +383,7 @@ write.table(lint_endopi_markers_facs, file = here("00_data_ingest", "sanne_analy
 
 liver_endopi_markers_facs = makeAnalysis(facsLiverEndo, facsLiverEpi)
 
-write.table(liver_endopi_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("liver_endopi_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+write.table(liver_endopi_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("liver_endopi_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
 
 ```
 
@@ -401,7 +392,7 @@ write.table(liver_endopi_markers_facs, file = here("00_data_ingest", "sanne_anal
 
 lung_endopi_markers_facs = makeAnalysis(facsLungEndo, facsLungEpi)
 
-write.table(lung_endopi_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("lung_endopi_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+write.table(lung_endopi_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("lung_endopi_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
 
 ```
 
@@ -413,7 +404,7 @@ write.table(lung_endopi_markers_facs, file = here("00_data_ingest", "sanne_analy
 
 aorta_endo_rest_markers_facs = makeAnalysis(facsAortaEndo, unique(c(facsAllAorta, facsAortaEpi)))
 
-write.table(aorta_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("aorta_endo_rest_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+write.table(aorta_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("aorta_endo_rest_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
 
 ```
 ## Bladder Endo
@@ -422,7 +413,7 @@ write.table(aorta_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_a
 
 bladder_endo_rest_markers_facs = makeAnalysis(facsBladderEndo, unique(c(facsAllBladder, facsBladderEpi)))
 
-write.table(bladder_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("bladder_endo_rest_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+write.table(bladder_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("bladder_endo_rest_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
 
 ```
 
@@ -432,7 +423,7 @@ write.table(bladder_endo_rest_markers_facs, file = here("00_data_ingest", "sanne
 
 kidney_endo_rest_markers_facs = makeAnalysis(facsKidneyEndo, unique(c(facsAllKidney, facsKidneyEpi)))
 
-write.table(kidney_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("kidney_endo_rest_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+write.table(kidney_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("kidney_endo_rest_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
 
 ```
 
@@ -442,7 +433,7 @@ write.table(kidney_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_
 
 lint_endo_rest_markers_facs = makeAnalysis(facsLintEndo, unique(c(facsAllLint, facsLintEpi)))
 
-write.table(lint_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("lint_endo_rest_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+write.table(lint_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("lint_endo_rest_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
 
 ```
 
@@ -452,7 +443,7 @@ write.table(lint_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_an
 
 liver_endo_rest_markers_facs = makeAnalysis(facsLiverEndo, unique(c(facsAllLiver, facsLiverEpi)))
 
-write.table(liver_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("liver_endo_rest_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+write.table(liver_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("liver_endo_rest_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
 
 ```
 
@@ -463,6 +454,6 @@ write.table(liver_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_a
 
 lung_endo_rest_markers_facs = makeAnalysis(facsLungEndo, unique(c(facsAllLung, facsLungEpi)))
 
-write.table(lung_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("lung_endo_rest_markers_facs", "tsv", sep="")) ,quote=FALSE, sep='\t')
+write.table(lung_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("lung_endo_rest_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
 
 ```
