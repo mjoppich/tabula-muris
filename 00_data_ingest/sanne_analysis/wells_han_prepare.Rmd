@@ -110,3 +110,17 @@ table(mca@meta.data$Annotation)
 sink()
 
 ```
+
+
+```{r}
+#|Lung|Intestine|Kidney|Bladder|Liver
+cat(grep(pattern="Heart", x=unique(mca@meta.data$Annotation), value = TRUE), sep="\n")
+cat(grep(pattern="Lung", x=unique(mca@meta.data$Annotation), value = TRUE), sep="\n")
+cat(grep(pattern="Intestine", x=unique(mca@meta.data$Annotation), value = TRUE), sep="\n")
+cat(grep(pattern="Kidney", x=unique(mca@meta.data$Annotation), value = TRUE), sep="\n")
+cat(grep(pattern="Bladder", x=unique(mca@meta.data$Annotation), value = TRUE), sep="\n")
+cat(grep(pattern="Liver", x=unique(mca@meta.data$Annotation), value = TRUE), sep="\n")
+cat(grep(pattern="Brain", x=unique(mca@meta.data$Annotation), value = TRUE), sep="\n")
+
+
+```

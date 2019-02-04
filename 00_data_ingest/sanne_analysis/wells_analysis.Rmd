@@ -56,31 +56,114 @@ liverEndo = c("Endothelial cell(Liver)")
 liverEpi = c("Epithelial cell(Liver)", "Epithelia cell_Spp1 high(Liver)")
 
 
-aortaCells = c(aortaEndo,aortaEpi)
-lungCells = c(lungEndo,lungEpi)
-lintCells = c(lintEndo,lintEpi)
-kidneyCells = c(kidneyEndo,kidneyEpi)
-bladderCells = c(bladderEndo,bladderEpi)
-liverCells = c(liverEndo, liverEpi)
+#newer version
+
+wellsAortaEndo = c("Vascular endothelial cell(Neonatal-Heart)",
+"Endothelial cell_Igfbp5 high(Neonatal-Heart)",
+"Endothelial cell_Eln high(Neonatal-Heart)",
+"Endothelial cell_Enpp2 high(Neonatal-Heart)")
+wellsLungEndo = c("Endothelial cell_Kdr high(Lung)",
+"Endothelial cell_Tmem100 high(Lung)",
+"Endothelial cells_Vwf high(Lung)")
+wellsLintEndo = c()
+wellsKidneyEndo = c("Endothelial cell(Kidney)",
+"Fenestrated endothelial cell_Plvap high(Kidney)",
+"Fenestrated endothelial cell_Tm4sf1 high(Kidney)")
+wellsBladderEndo = c("Vascular endothelial cell(Bladder)",
+"Endothelial cell_Ly6c1 high(Bladder)")
+wellsLiverEndo = c("Endothelial cell(Liver)")
+
+wellsAortaEpi = c("Epithelial cell(Neonatal-Heart)")
+wellsLungEpi = c()
+wellsLintEpi = c("Columnar epithelium(Small-Intestine)",
+"Epithelial cell_Kcne3 high(Small-Intestine)",
+"Epithelial cell_Sh2d6 high(Small-Intestine)")
+wellsKidneyEpi = c("Epithelial cell_Cryab high(Kidney)")
+wellsBladderEpi = c("Basal epithelial cell(Bladder)",
+"Epithelial cell_Upk3a high(Bladder)",
+"Epithelial cell_Gm23935 high(Bladder)")
+wellsLiverEpi = c("Epithelial cell(Liver)",
+"Epithelia cell_Spp1 high(Liver)")
+
+wellsAortaCir = c("Neutrophil_Ngp high(Neonatal-Heart)",
+"Neutrophil_Retnlg high(Neonatal-Heart)")
+wellsLungCir = c("B Cell(Lung)",
+"NK Cell(Lung)",
+"Dividing T cells(Lung)",
+"Eosinophil granulocyte(Lung)",
+"Neutrophil granulocyte(Lung)",
+"T Cell_Cd8b1 high(Lung)",
+"Basophil(Lung)")
+wellsLintCir = c("T cell(Fetal_Intestine)",
+"B cell_Igkv12-46 high(Small-Intestine)",
+"B cell_Ms4a1 high(Small-Intestine)",
+"T cell_Icos high(Small-Intestine)",
+"B cell_Jchain high(Small-Intestine)",
+"T cell_Cd7 high(Small-Intestine)",
+"T cell_Ccl5 high(Small-Intestine)",
+"T cell_Ms4a4b high(Small-Intestine)",
+"B cell_Ighd high(Small-Intestine)",
+"Erythroblast(Small-Intestine)")
+wellsKidneyCir = c("B cell(Kidney)",
+"T cell(Kidney)",
+"Neutrophil progenitor_S100a8 high(Kidney)")
+wellsBladderCir = c("NK cell(Bladder)")
+wellsLiverCir = c("B cell_Jchain high(Liver)",
+"Granulocyte(Liver)",
+"T cell_Trbc2 high(Liver)",
+"Erythroblast_Hbb-bt high(Liver)",
+"T cell_Gzma high(Liver)",
+"Erythroblast_Hbb-bs high(Liver)",
+"B cell_Fcmr high(Liver)",
+"Neutrophil_Ngp high(Liver)")
 
 
-allAorta = unique(grep(pattern="Neonatal-Heart", x=mca@meta.data$Annotation, value = TRUE))
-allAorta = setdiff(allAorta, aortaCells)
+wellsAortaCells = c(wellsAortaEndo,wellsAortaEpi, wellsAortaCir)
+wellsLungCells = c(wellsLungEndo,wellsLungEpi, wellsLungCir)
+wellsLintCells = c(wellsLintEndo,wellsLintEpi, wellsLintCir)
+wellsKidneyCells = c(wellsKidneyEndo,wellsKidneyEpi, wellsKidneyCir)
+wellsBladderCells = c(wellsBladderEndo,wellsBladderEpi, wellsBladderCir)
+wellsLiverCells = c(wellsLiverEndo,wellsLiverEpi, wellsLiverCir)
 
-allLung = unique(grep(pattern="Lung", x=mca@meta.data$Annotation, value = TRUE))
-allLung = setdiff(allLung, lungCells)
 
-allLint = unique(grep(pattern="[Small|Fetal][_-]Intestine", x=mca@meta.data$Annotation, value = TRUE))
-allLint = setdiff(allLint, lintCells)
+wellsAllAorta = unique(grep(pattern="Neonatal-Heart", x=mca@meta.data$Annotation, value = TRUE))
+wellsAllAorta = setdiff(wellsAllAorta, wellsAortaCells)
 
-allKidney = unique(grep(pattern="Kidney", x=mca@meta.data$Annotation, value = TRUE))
-allKidney = setdiff(allKidney, kidneyCells)
+wellsAllLung = unique(grep(pattern="\(Lung\)", x=mca@meta.data$Annotation, value = TRUE))
+wellsAllLung = setdiff(wellsAllLung, wellsLungCells)
 
-allBladder = unique(grep(pattern="Bladder", x=mca@meta.data$Annotation, value = TRUE))
-allBladder = setdiff(allBladder, bladderCells)
+wellsAllLint = unique(grep(pattern="[Small][_-]Intestine", x=mca@meta.data$Annotation, value = TRUE))
+wellsAllLint = setdiff(wellsAllLint, wellsLintCells)
 
-allLiver = unique(grep(pattern="Liver", x=mca@meta.data$Annotation, value = TRUE))
-allLiver = setdiff(allLiver, liverCells)
+wellsAllKidney = unique(grep(pattern="Kidney", x=mca@meta.data$Annotation, value = TRUE))
+wellsAllKidney = setdiff(wellsAllKidney, wellsKidneyCells)
+
+wellsAllBladder = unique(grep(pattern="Bladder", x=mca@meta.data$Annotation, value = TRUE))
+wellsAllBladder = setdiff(wellsAllBladder, wellsBladderCells)
+
+wellsAllLiver = unique(grep(pattern="Liver", x=mca@meta.data$Annotation, value = TRUE))
+wellsAllLiver = setdiff(wellsAllLiver, wellsLiverCells)
+
+
+```
+
+
+```{r}
+
+
+print(wellsAortaCells)
+print(wellsLungCells)
+print(wellsLintCells)
+print(wellsKidneyCells)
+print(wellsBladderCells)
+print(wellsLiverCells)
+
+print(wellsAllAorta)
+print(wellsAllLung)
+print(wellsAllLint)
+print(wellsAllKidney)
+print(wellsAllBladder)
+print(wellsAllLiver)
 
 
 ```

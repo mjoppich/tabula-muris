@@ -149,13 +149,39 @@ facsBladderEpi = c("Bladder.bladder cell")
 facsLiverEndo = c("Liver.endothelial cell of hepatic sinusoid")
 facsLiverEpi = c("Liver.hepatocyte")
 
+#newer version
 
-facsAortaCells = c(facsAortaEndo,facsAortaEpi)
-facsLungCells = c(facsLungEndo,facsLungEpi)
-facsLintCells = c(facsLintEndo,facsLintEpi)
-facsKidneyCells = c(facsKidneyEndo,facsKidneyEpi)
-facsBladderCells = c(facsBladderEndo,facsBladderEpi)
-facsLiverCells = c(facsLiverEndo, facsLiverEpi)
+facsAortaEndo = c("Aorta.endothelial cell")
+facsAortaEpi = c()
+facsAortaCir = c("Aorta.erythrocyte")
+
+facsLungEndo = c("Lung.lung endothelial cell")
+facsLungEpi = c("Lung.epithelial cell of lung")
+facsLungCir = c("Lung.myeloid cell", "Lung.monocyte", "Lung.classical monocyte", "Lung.B cell", "Lung.T cell", "Lung.natural killer cell", "Lung.leukocyte")
+
+facsLintEndo = c()
+facsLintEpi = c("Large_Intestine.epithelial cell of large intestine")
+facsLintCir = c()
+
+facsKidneyEndo = c("Kidney.endothelial cell")
+facsKidneyEpi = c()
+facsKidneyCir = c("Kidney.leukocyte")
+
+facsBladderEndo = c()
+facsBladderEpi = c()
+facsBladderCir = c()
+
+facsLiverEndo = c("Liver.endothelial cell of hepatic sinusoid")
+facsLiverEpi = c()
+facsLiverCir = c("Liver.natural killer cell", "Liver.B cell")
+
+
+facsAortaCells = c(facsAortaEndo,facsAortaEpi, facsAortaCir)
+facsLungCells = c(facsLungEndo,facsLungEpi, facsLungCir)
+facsLintCells = c(facsLintEndo,facsLintEpi, facsLintCir)
+facsKidneyCells = c(facsKidneyEndo,facsKidneyEpi, facsKidneyCir)
+facsBladderCells = c(facsBladderEndo,facsBladderEpi, facsBladderEpi)
+facsLiverCells = c(facsLiverEndo, facsLiverEpi, facsLiverEpi)
 
 
 facsAllAorta = unique(grep(pattern="Aorta", x=Idents(facsTiss), value = TRUE))
@@ -175,6 +201,24 @@ facsAllBladder = setdiff(facsAllBladder, facsBladderCells)
 
 facsAllLiver = unique(grep(pattern="Liver", x=Idents(facsTiss), value = TRUE))
 facsAllLiver = setdiff(facsAllLiver, facsLiverCells)
+
+```
+
+```{r}
+
+
+print(facsAortaCells)
+print(facsLungCells)
+print(facsKidneyCells)
+print(facsBladderCells)
+print(facsLiverCells)
+
+print(facsAllAorta)
+print(facsAllLung)
+print(facsAllKidney)
+print(facsAllBladder)
+print(facsAllLiver)
+
 
 ```
 
@@ -455,5 +499,11 @@ write.table(liver_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_a
 lung_endo_rest_markers_facs = makeAnalysis(facsLungEndo, unique(c(facsAllLung, facsLungEpi)))
 
 write.table(lung_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("lung_endo_rest_markers_facs", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+```
+
+```{r}
+
+VlnPlot(object = facsTiss, features = rownames(head(x = lung_endo_rest_markers_facs, n=2)), ncol=2, idents=unique(c(facsAllLung, facsLungEpi, facsLungEndo)), slot = 'counts', log = TRUE, same.y.lims =FALSE)
 
 ```

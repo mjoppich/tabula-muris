@@ -133,7 +133,7 @@ Eventually we can now perform DE analysis:
 
 tissues_of_interest = c("Heart_and_Aorta", "Lung", "Kidney", "Bladder", "Liver")
 
-dropletAortaEndo = c("Heart_and_Aorta.endothelial cell", "Heart_and_Aorta.fibroblast")
+dropletAortaEndo = c("Heart_and_Aorta.endothelial cell")
 dropletAortaEpi = c("Heart_and_Aorta.endocardial cell")
 
 dropletLungEndo = c("Lung.lung endothelial cell")
@@ -152,14 +152,36 @@ dropletLiverEndo = c("Liver.endothelial cell of hepatic sinusoid")
 dropletLiverEpi = c("Liver.duct epithelial cell", "Liver.hepatocyte")
 
 
-dropletAortaCells = c(dropletAortaEndo,dropletAortaEpi)
-dropletLungCells = c(dropletLungEndo,dropletLungEpi)
-dropletKidneyCells = c(dropletKidneyEndo,dropletKidneyEpi)
-dropletBladderCells = c(dropletBladderEndo,dropletBladderEpi)
-dropletLiverCells = c(dropletLiverEndo, dropletLiverEpi)
+# newer version
+
+dropletAortaEpi = c()
+dropletLiverEpi = c("Liver.duct epithelial cell")
+dropletLungEpi = c()
+dropletKidneyEpi = c()
+dropletBladderEpi = c()
+
+dropletAortaEndo = c("Heart_and_Aorta.endothelial cell")
+dropletLiverEndo = c("Liver.endothelial cell of hepatic sinusoid")
+dropletLungEndo = c("Lung.lung endothelial cell")
+dropletKidneyEndo = c("Kidney.kidney capillary endothelial cell")
+dropletBladderEndo = c("Bladder.endothelial cell")
 
 
-dropletAllAorta = unique(grep(pattern="Heart", x=Idents(dropletTiss), value = TRUE))
+dropletAortaCir = c()
+dropletLiverCir = c("Liver.leukocyte")
+dropletLungCir = c("Lung.myeloid cell", "Lung.B cell", "Lung.natural killer cell", "Lung.T cell", "Lung.non-classical monocyte", "Lung.leukocyte", "Lung.classical monocyte")
+dropletKidneyCir = c("Kidney.leukocyte")
+dropletBladderCir = c("Bladder.leukocyte")
+
+
+dropletAortaCells = c(dropletAortaEndo,dropletAortaEpi, dropletAortaCir)
+dropletLungCells = c(dropletLungEndo,dropletLungEpi, dropletLungCir)
+dropletKidneyCells = c(dropletKidneyEndo,dropletKidneyEpi, dropletKidneyCir)
+dropletBladderCells = c(dropletBladderEndo,dropletBladderEpi, dropletBladderCir)
+dropletLiverCells = c(dropletLiverEndo, dropletLiverEpi, dropletLiverCir)
+
+
+dropletAllAorta = unique(grep(pattern="Heart_and_Aorta", x=Idents(dropletTiss), value = TRUE))
 dropletAllAorta = setdiff(dropletAllAorta, dropletAortaCells)
 
 dropletAllLung = unique(grep(pattern="Lung", x=Idents(dropletTiss), value = TRUE))
@@ -173,6 +195,24 @@ dropletAllBladder = setdiff(dropletAllBladder, dropletBladderCells)
 
 dropletAllLiver = unique(grep(pattern="Liver", x=Idents(dropletTiss), value = TRUE))
 dropletAllLiver = setdiff(dropletAllLiver, dropletLiverCells)
+
+```
+
+```{r}
+
+
+print(dropletAortaCells)
+print(dropletLungCells)
+print(dropletKidneyCells)
+print(dropletBladderCells)
+print(dropletLiverCells)
+
+print(dropletAllAorta)
+print(dropletAllLung)
+print(dropletAllKidney)
+print(dropletAllBladder)
+print(dropletAllLiver)
+
 
 ```
 
@@ -389,5 +429,91 @@ write.table(liver_endo_rest_markers_droplet, file = here("00_data_ingest", "sann
 lung_endo_rest_markers_droplet = makeAnalysis(dropletLungEndo, unique(c(dropletAllLung, dropletLungEpi)))
 
 write.table(lung_endo_rest_markers_droplet, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("lung_endo_rest_markers_droplet",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+```
+
+
+# here we can do new analyses.
+
+##-> endothelial X vs all other (epi, endo, circ)
+## these markers are then specific for this endothelial cell!
+
+### Aorta
+
+```{r}
+
+makeNewAnalysis = function(targetCells, sourceCells, tissueName, prefix) {
+    if (is.null(targetCells)|| is.null(sourceCells))
+    {
+      print("makeAnalysis failed due to null tissue")
+      return(NULL)
+    }
+  
+    if (length(targetCells) == 0 || length(sourceCells) == 0)
+    {
+      print("makeAnalysis failed due to 0 length tissue")
+      return(NULL)
+    }
+  
+  
+  allComparisons = c()
+  
+  for (targetCell in targetCells)
+  {
+    
+    targetComparisons = c()
+  
+    for (sourceCell in sourceCells)
+    {
+      
+      newMarkers = FindMarkers(dropletTiss, ident.1=c(targetCell), ident.2=c(sourceCell),only.pos=FALSE, test.use="MAST")
+      
+      
+      
+      outfname = gsub(" ", "_", paste(prefix, paste(tissueName, targetCell, sourceCell, sep = "___"), ".tsv", sep=""))
+      print(outfname)
+      
+      write.table(newMarkers, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis_excl", outfname) ,quote=FALSE, sep='\t')
+      
+      targetComparisons = append(targetComparisons, list(newMarkers))
+      
+    }
+
+    allComparisons = append(allComparisons, list(targetComparisons))
+    
+  }
+  
+  return(allComparisons)
+}
+
+```
+
+
+```{r}
+
+excl_endo_kidney_markers_droplet = makeNewAnalysis(dropletKidneyEndo, c(dropletKidneyCir, dropletKidneyEpi, dropletAllKidney), "kidney", "excl_")
+excl_endo_lung_markers_droplet = makeNewAnalysis(dropletLungEndo, c(dropletLungCir, dropletLungEpi, dropletAllLung), "lung", "excl_")
+excl_endo_lung_markers_droplet = makeNewAnalysis(dropletAortaEndo, c(dropletAortaCir, dropletAortaEpi, dropletAllAorta), "aorta", "excl_")
+excl_endo_lung_markers_droplet = makeNewAnalysis(dropletLungEndo, c(dropletLungCir, dropletLungEpi, dropletAllLung), "lung", "excl_")
+excl_endo_lung_markers_droplet = makeNewAnalysis(dropletLungEndo, c(dropletLungCir, dropletLungEpi, dropletAllLung), "lung", "excl_")
+
+write.table(excl_endo_aorta_markers_droplet, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("excl_endo_aorta_markers_droplet",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+VlnPlot(object = dropletTiss, features = c(rownames(head(x = excl_endo_aorta_markers_droplet, n=2)), "Mgll"), ncol=3, idents=unique(c(dropletAortaEndo, dropletLungEndo)), slot = 'counts', log = TRUE, same.y.lims =FALSE)
+
+```
+
+
+```{r}
+
+
+for (targetCellData in excl_endo_aorta_markers_droplet)
+{
+  
+
+  
+}
+
+
 
 ```
