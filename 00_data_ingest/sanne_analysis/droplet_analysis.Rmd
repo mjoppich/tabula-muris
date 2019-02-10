@@ -466,6 +466,9 @@ makeNewAnalysis = function(targetCells, sourceCells, tissueName, prefix) {
     for (sourceCell in sourceCells)
     {
       
+      print(targetCell)
+      print(sourceCell)
+      
       newMarkers = FindMarkers(dropletTiss, ident.1=c(targetCell), ident.2=c(sourceCell),only.pos=FALSE, test.use="MAST")
       
       
@@ -489,31 +492,68 @@ makeNewAnalysis = function(targetCells, sourceCells, tissueName, prefix) {
 ```
 
 
-```{r}
+```{r, fig.width=10, fig.height=6}
 
-excl_endo_kidney_markers_droplet = makeNewAnalysis(dropletKidneyEndo, c(dropletKidneyCir, dropletKidneyEpi, dropletAllKidney), "kidney", "excl_")
-excl_endo_lung_markers_droplet = makeNewAnalysis(dropletLungEndo, c(dropletLungCir, dropletLungEpi, dropletAllLung), "lung", "excl_")
-excl_endo_lung_markers_droplet = makeNewAnalysis(dropletAortaEndo, c(dropletAortaCir, dropletAortaEpi, dropletAllAorta), "aorta", "excl_")
-excl_endo_lung_markers_droplet = makeNewAnalysis(dropletLungEndo, c(dropletLungCir, dropletLungEpi, dropletAllLung), "lung", "excl_")
-excl_endo_lung_markers_droplet = makeNewAnalysis(dropletLungEndo, c(dropletLungCir, dropletLungEpi, dropletAllLung), "lung", "excl_")
-
-write.table(excl_endo_aorta_markers_droplet, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("excl_endo_aorta_markers_droplet",".tsv", sep="")) ,quote=FALSE, sep='\t')
-
-VlnPlot(object = dropletTiss, features = c(rownames(head(x = excl_endo_aorta_markers_droplet, n=2)), "Mgll"), ncol=3, idents=unique(c(dropletAortaEndo, dropletLungEndo)), slot = 'counts', log = TRUE, same.y.lims =FALSE)
+VlnPlot(object = dropletTiss, features = c("Cldn5", "Tmem100"), ncol=4, idents=unique(c(dropletLungEndo, dropletLungCir)), slot = 'counts', log = TRUE, same.y.lims =FALSE)
 
 ```
 
 
-```{r}
+# NEW ANALYSIS
+
+## WITHIN OWN TISSUE
+
+```{r results="hide", echo=FALSE}
+
+a = makeNewAnalysis(dropletKidneyEndo, c(dropletKidneyCir, dropletKidneyEpi, dropletAllKidney), "kidney", "excl_")
+a = makeNewAnalysis(dropletLungEndo, c(dropletLungCir, dropletLungEpi, dropletAllLung), "lung", "excl_")
+a = makeNewAnalysis(dropletAortaEndo, c(dropletAortaCir, dropletAortaEpi, dropletAllAorta), "aorta", "excl_")
+a = makeNewAnalysis(dropletBladderEndo, c(dropletBladderCir, dropletBladderEpi, dropletAllBladder), "bladder", "excl_")
+a = makeNewAnalysis(dropletLiverEndo, c(dropletLiverCir, dropletLiverEpi, dropletAllLiver), "liver", "excl_")
+
+```
+
+## WITHIN OWN CLASS
+
+```{r results="hide", echo=FALSE}
+
+a=makeNewAnalysis(dropletKidneyEndo, c(dropletLungEndo, dropletAortaEndo, dropletBladderEndo, dropletLiverEndo), "kidney", "endo_excl_")
+a=makeNewAnalysis(dropletLungEndo, c(dropletKidneyEndo, dropletAortaEndo, dropletBladderEndo, dropletLiverEndo), "lung", "endo_excl_")
+a=makeNewAnalysis(dropletAortaEndo, c(dropletLungEndo, dropletKidneyEndo, dropletBladderEndo, dropletLiverEndo), "aorta", "endo_excl_")
+a=makeNewAnalysis(dropletBladderEndo, c(dropletAortaEndo, dropletLungEndo, dropletKidneyEndo, dropletLiverEndo), "bladder", "endo_excl_")
+a=makeNewAnalysis(dropletLiverEndo, c(dropletAortaEndo, dropletLungEndo, dropletKidneyEndo, dropletBladderEndo), "liver", "endo_excl_")
+
+```
 
 
-for (targetCellData in excl_endo_aorta_markers_droplet)
-{
-  
+## AGAINST ALL OTHER BLOOD CIRCULATING STUFF
 
-  
-}
+```{r results="hide", echo=FALSE}
+a=makeNewAnalysis(dropletKidneyEndo, c(dropletKidneyCir, dropletLungCir, dropletAortaCir, dropletBladderCir, dropletLiverCir), "kidney", "endo_cir_excl_")
+a=makeNewAnalysis(dropletLungEndo, c(dropletLungCir, dropletKidneyCir, dropletAortaCir, dropletBladderCir, dropletLiverCir), "lung", "endo_cir_excl_")
+a=makeNewAnalysis(dropletAortaEndo, c(dropletAortaCir, dropletLungCir, dropletKidneyCir, dropletBladderCir, dropletLiverCir), "aorta", "endo_cir_excl_")
+a=makeNewAnalysis(dropletBladderEndo, c(dropletBladderCir, dropletAortaCir, dropletLungCir, dropletKidneyCir, dropletLiverCir), "bladder", "endo_cir_excl_")
+a=makeNewAnalysis(dropletLiverEndo, c(dropletLiverCir, dropletAortaCir, dropletLungCir, dropletKidneyCir, dropletBladderCir), "liver", "endo_cir_excl_")
+```
+
+## AGAINST ALL OTHER EPITHELIAL
+
+```{r results="hide", echo=FALSE}
+a=makeNewAnalysis(dropletKidneyEndo, c(dropletKidneyEpi, dropletLungEpi, dropletAortaEpi, dropletBladderEpi, dropletLiverEpi), "kidney", "endo_epi_excl_")
+a=makeNewAnalysis(dropletLungEndo, c(dropletLungEpi, dropletKidneyEpi, dropletAortaEpi, dropletBladderEpi, dropletLiverEpi), "lung", "endo_epi_excl_")
+a=makeNewAnalysis(dropletAortaEndo, c(dropletAortaEpi, dropletLungEpi, dropletKidneyEpi, dropletBladderEpi, dropletLiverEpi), "aorta", "endo_epi_excl_")
+a=makeNewAnalysis(dropletBladderEndo, c(dropletBladderEpi, dropletAortaEpi, dropletLungEpi, dropletKidneyEpi, dropletLiverEpi), "bladder", "endo_epi_excl_")
+a=makeNewAnalysis(dropletLiverEndo, c(dropletLiverEpi, dropletAortaEpi, dropletLungEpi, dropletKidneyEpi, dropletBladderEpi), "liver", "endo_epi_excl_")
+```
 
 
 
+## AGAINST ALL 
+
+```{r results="hide", echo=FALSE, message=F, warning=F}
+a=makeNewAnalysis(dropletKidneyEndo, c(dropletKidneyEpi, dropletLungEpi, dropletAortaEpi, dropletBladderEpi, dropletLiverEpi,dropletKidneyCir, dropletLungCir, dropletAortaCir, dropletBladderCir, dropletLiverCir), "kidney", "endo_cirepi_excl_")
+a=makeNewAnalysis(dropletLungEndo, c(dropletKidneyEpi, dropletLungEpi, dropletAortaEpi, dropletBladderEpi, dropletLiverEpi,dropletLungCir, dropletKidneyCir, dropletAortaCir, dropletBladderCir, dropletLiverCir), "lung", "endo_cirepi_excl_")
+a=makeNewAnalysis(dropletAortaEndo, c(dropletKidneyEpi, dropletLungEpi, dropletAortaEpi, dropletBladderEpi, dropletLiverEpi,dropletAortaCir, dropletLungCir, dropletKidneyCir, dropletBladderCir, dropletLiverCir), "aorta", "endo_cirepi_excl_")
+a=makeNewAnalysis(dropletBladderEndo, c(dropletKidneyEpi, dropletLungEpi, dropletAortaEpi, dropletBladderEpi, dropletLiverEpi,dropletBladderCir, dropletAortaCir, dropletLungCir, dropletKidneyCir, dropletLiverCir), "bladder", "endo_cirepi_excl_")
+a=makeNewAnalysis(dropletLiverEndo, c(dropletKidneyEpi, dropletLungEpi, dropletAortaEpi, dropletBladderEpi, dropletLiverEpi,dropletLiverCir, dropletAortaCir, dropletLungCir, dropletKidneyCir, dropletBladderCir), "liver", "endo_cirepi_excl_")
 ```

@@ -94,6 +94,7 @@ wellsLungCir = c("B Cell(Lung)",
 "Neutrophil granulocyte(Lung)",
 "T Cell_Cd8b1 high(Lung)",
 "Basophil(Lung)")
+
 wellsLintCir = c("T cell(Fetal_Intestine)",
 "B cell_Igkv12-46 high(Small-Intestine)",
 "B cell_Ms4a1 high(Small-Intestine)",
@@ -129,10 +130,10 @@ wellsLiverCells = c(wellsLiverEndo,wellsLiverEpi, wellsLiverCir)
 wellsAllAorta = unique(grep(pattern="Neonatal-Heart", x=mca@meta.data$Annotation, value = TRUE))
 wellsAllAorta = setdiff(wellsAllAorta, wellsAortaCells)
 
-wellsAllLung = unique(grep(pattern="\(Lung\)", x=mca@meta.data$Annotation, value = TRUE))
+wellsAllLung = unique(grep(pattern="(Lung)", fixed=TRUE, x=mca@meta.data$Annotation, value = TRUE))
 wellsAllLung = setdiff(wellsAllLung, wellsLungCells)
 
-wellsAllLint = unique(grep(pattern="[Small][_-]Intestine", x=mca@meta.data$Annotation, value = TRUE))
+wellsAllLint = unique(grep(pattern="[Small-]Intestine", x=mca@meta.data$Annotation, value = TRUE))
 wellsAllLint = setdiff(wellsAllLint, wellsLintCells)
 
 wellsAllKidney = unique(grep(pattern="Kidney", x=mca@meta.data$Annotation, value = TRUE))
@@ -164,6 +165,7 @@ print(wellsAllLint)
 print(wellsAllKidney)
 print(wellsAllBladder)
 print(wellsAllLiver)
+
 
 
 ```
@@ -448,4 +450,137 @@ lung_endo_rest_markers_wells = makeAnalysis(lungEndo, unique(c(allLung, lungEpi)
 
 write.table(lung_endo_rest_markers_wells, file = here("00_data_ingest", "sanne_analysis", "wells_analysis", paste("lung_endo_rest_markers_wells", ".tsv", sep="")) ,quote=FALSE, sep='\t')
 
+```
+
+# NEW ANALYSIS
+
+```{r}
+
+makeNewAnalysiswells = function(targetCells, sourceCells, tissueName, prefix) {
+    if (is.null(targetCells)|| is.null(sourceCells))
+    {
+      print("makeAnalysis failed due to null tissue")
+      return(NULL)
+    }
+  
+    if (length(targetCells) == 0 || length(sourceCells) == 0)
+    {
+      print("makeAnalysis failed due to 0 length tissue")
+      return(NULL)
+    }
+  
+  
+  allComparisons = c()
+  
+  for (targetCell in targetCells)
+  {
+    
+    targetComparisons = c()
+  
+    for (sourceCell in sourceCells)
+    {
+      
+      print(targetCell)
+      print(sourceCell)
+      
+      tryCatch({
+        newMarkers = FindMarkers(mca, ident.1=c(targetCell), ident.2=c(sourceCell),only.pos=FALSE, test.use="MAST")
+        
+        outfname = gsub(" ", "_", paste(prefix, paste(tissueName, targetCell, sourceCell, sep = "___"), ".tsv", sep=""))
+        print(outfname)
+      
+        write.table(newMarkers, file = here("00_data_ingest", "sanne_analysis", "wells_analysis_excl", outfname) ,quote=FALSE, sep='\t')
+      },
+                
+          error=function(e) 
+            {
+            
+            outfname = gsub(" ", "_", paste(prefix, paste(tissueName, targetCell, sourceCell, sep = "___"), ".tsv", sep=""))
+            
+            print("Error in FindMarkers")
+            print(outfname)
+            print(e)
+            
+          }
+      )
+                
+      
+      
+      
+
+      
+      #targetComparisons = append(targetComparisons, list(newMarkers))
+      
+    }
+
+    #allComparisons = append(allComparisons, list(targetComparisons))
+    
+  }
+  
+  return(allComparisons)
+}
+
+```
+
+## WITHIN OWN TISSUE
+
+```{r results="hide", echo=FALSE}
+
+a = makeNewAnalysiswells(wellsKidneyEndo, c(wellsKidneyCir, wellsKidneyEpi, wellsAllKidney), "kidney", "excl_")
+a = makeNewAnalysiswells(wellsLungEndo, c(wellsLungCir, wellsLungEpi, wellsAllLung), "lung", "excl_")
+a = makeNewAnalysiswells(wellsAortaEndo, c(wellsAortaCir, wellsAortaEpi, wellsAllAorta), "aorta", "excl_")
+a = makeNewAnalysiswells(wellsBladderEndo, c(wellsBladderCir, wellsBladderEpi, wellsAllBladder), "bladder", "excl_")
+a = makeNewAnalysiswells(wellsLiverEndo, c(wellsLiverCir, wellsLiverEpi, wellsAllLiver), "liver", "excl_")
+
+a = makeNewAnalysiswells(wellsLintEndo, c(wellsLintCir, wellsLintEpi, wellsAllLint), "lint", "excl_")
+
+```
+
+## WITHIN OWN CLASS
+
+```{r results="hide", echo=FALSE}
+
+a=makeNewAnalysiswells(wellsKidneyEndo, c(wellsLungEndo, wellsAortaEndo, wellsBladderEndo, wellsLiverEndo, wellsLintEndo), "kidney", "endo_excl_")
+a=makeNewAnalysiswells(wellsLungEndo, c(wellsKidneyEndo, wellsAortaEndo, wellsBladderEndo, wellsLiverEndo, wellsLintEndo), "lung", "endo_excl_")
+a=makeNewAnalysiswells(wellsAortaEndo, c(wellsLungEndo, wellsKidneyEndo, wellsBladderEndo, wellsLiverEndo, wellsLintEndo), "aorta", "endo_excl_")
+a=makeNewAnalysiswells(wellsBladderEndo, c(wellsAortaEndo, wellsLungEndo, wellsKidneyEndo, wellsLiverEndo, wellsLintEndo), "bladder", "endo_excl_")
+a=makeNewAnalysiswells(wellsLiverEndo, c(wellsAortaEndo, wellsLungEndo, wellsKidneyEndo, wellsBladderEndo, wellsLintEndo), "liver", "endo_excl_")
+
+a=makeNewAnalysiswells(wellsLintEndo, c(wellsAortaEndo, wellsLungEndo, wellsKidneyEndo, wellsBladderEndo, wellsLiverEndo), "lint", "endo_excl_")
+
+```
+
+
+## AGAINST ALL OTHER BLOOD CIRCULATING STUFF
+
+```{r results="hide", echo=FALSE}
+a=makeNewAnalysiswells(wellsKidneyEndo, c(wellsKidneyCir, wellsLungCir, wellsAortaCir, wellsBladderCir, wellsLiverCir), "kidney", "endo_cir_excl_")
+a=makeNewAnalysiswells(wellsLungEndo, c(wellsLungCir, wellsKidneyCir, wellsAortaCir, wellsBladderCir, wellsLiverCir), "lung", "endo_cir_excl_")
+a=makeNewAnalysiswells(wellsAortaEndo, c(wellsAortaCir, wellsLungCir, wellsKidneyCir, wellsBladderCir, wellsLiverCir), "aorta", "endo_cir_excl_")
+a=makeNewAnalysiswells(wellsBladderEndo, c(wellsBladderCir, wellsAortaCir, wellsLungCir, wellsKidneyCir, wellsLiverCir), "bladder", "endo_cir_excl_")
+a=makeNewAnalysiswells(wellsLiverEndo, c(wellsLiverCir, wellsAortaCir, wellsLungCir, wellsKidneyCir, wellsBladderCir), "liver", "endo_cir_excl_")
+
+a=makeNewAnalysiswells(wellsLintEndo, c(wellsLiverCir, wellsAortaCir, wellsLungCir, wellsKidneyCir, wellsBladderCir, wellsLintCir), "lint", "endo_cir_excl_")
+```
+
+## AGAINST ALL OTHER EPITHELIAL
+
+```{r results="hide", echo=FALSE}
+a=makeNewAnalysiswells(wellsKidneyEndo, c(wellsKidneyEpi, wellsLungEpi, wellsAortaEpi, wellsBladderEpi, wellsLiverEpi), "kidney", "endo_epi_excl_")
+a=makeNewAnalysiswells(wellsLungEndo, c(wellsLungEpi, wellsKidneyEpi, wellsAortaEpi, wellsBladderEpi, wellsLiverEpi), "lung", "endo_epi_excl_")
+a=makeNewAnalysiswells(wellsAortaEndo, c(wellsAortaEpi, wellsLungEpi, wellsKidneyEpi, wellsBladderEpi, wellsLiverEpi), "aorta", "endo_epi_excl_")
+a=makeNewAnalysiswells(wellsBladderEndo, c(wellsBladderEpi, wellsAortaEpi, wellsLungEpi, wellsKidneyEpi, wellsLiverEpi), "bladder", "endo_epi_excl_")
+a=makeNewAnalysiswells(wellsLiverEndo, c(wellsLiverEpi, wellsAortaEpi, wellsLungEpi, wellsKidneyEpi, wellsBladderEpi), "liver", "endo_epi_excl_")
+```
+
+
+
+## AGAINST ALL 
+
+```{r results="hide", echo=FALSE, message=F, warning=F}
+a=makeNewAnalysiswells(wellsKidneyEndo, c(wellsKidneyEpi, wellsLungEpi, wellsAortaEpi, wellsBladderEpi, wellsLiverEpi,wellsKidneyCir, wellsLungCir, wellsAortaCir, wellsBladderCir, wellsLiverCir), "kidney", "endo_cirepi_excl_")
+a=makeNewAnalysiswells(wellsLungEndo, c(wellsKidneyEpi, wellsLungEpi, wellsAortaEpi, wellsBladderEpi, wellsLiverEpi,wellsLungCir, wellsKidneyCir, wellsAortaCir, wellsBladderCir, wellsLiverCir), "lung", "endo_cirepi_excl_")
+a=makeNewAnalysiswells(wellsAortaEndo, c(wellsKidneyEpi, wellsLungEpi, wellsAortaEpi, wellsBladderEpi, wellsLiverEpi,wellsAortaCir, wellsLungCir, wellsKidneyCir, wellsBladderCir, wellsLiverCir), "aorta", "endo_cirepi_excl_")
+a=makeNewAnalysiswells(wellsBladderEndo, c(wellsKidneyEpi, wellsLungEpi, wellsAortaEpi, wellsBladderEpi, wellsLiverEpi,wellsBladderCir, wellsAortaCir, wellsLungCir, wellsKidneyCir, wellsLiverCir), "bladder", "endo_cirepi_excl_")
+a=makeNewAnalysiswells(wellsLiverEndo, c(wellsKidneyEpi, wellsLungEpi, wellsAortaEpi, wellsBladderEpi, wellsLiverEpi,wellsLiverCir, wellsAortaCir, wellsLungCir, wellsKidneyCir, wellsBladderCir), "liver", "endo_cirepi_excl_")
 ```

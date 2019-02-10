@@ -46,6 +46,27 @@ def plotVennDiag(datadict, title, outfile):
         plt.show()
         return None
 
+
+
+def loadTMResults(infile):
+
+    gene2locev = defaultdict(lambda: defaultdict(set))
+
+    if infile==None:
+        return gene2locev
+
+    for line in infile:
+
+        aline = line.strip().split("\t")
+
+        location = aline[0]
+        gene = aline[4]
+        pmid = aline[7]
+
+    gene2locev[gene][location].add(pmid))
+
+    return gene2locev
+
 if __name__ == '__main__':
 
 
@@ -54,8 +75,11 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=None)
     parser.add_argument('-p', '--maxpval', type=float, required=False, default=0.05)
     parser.add_argument('-n', '--name', type=str, required=False, default="DE comparison")
+    parser.add_argument('-t', '--tm', type=argparse.FileType('r'), default=None)
 
     args = parser.parse_args()
+
+    gene2locev = loadTMResults(args.tm)
 
     print([x.name for x in args.diffreg])
 

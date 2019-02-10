@@ -507,3 +507,119 @@ write.table(lung_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_an
 VlnPlot(object = facsTiss, features = rownames(head(x = lung_endo_rest_markers_facs, n=2)), ncol=2, idents=unique(c(facsAllLung, facsLungEpi, facsLungEndo)), slot = 'counts', log = TRUE, same.y.lims =FALSE)
 
 ```
+
+
+
+
+# NEW ANALYSIS
+
+```{r}
+
+makeNewAnalysisFacs = function(targetCells, sourceCells, tissueName, prefix) {
+    if (is.null(targetCells)|| is.null(sourceCells))
+    {
+      print("makeAnalysis failed due to null tissue")
+      return(NULL)
+    }
+  
+    if (length(targetCells) == 0 || length(sourceCells) == 0)
+    {
+      print("makeAnalysis failed due to 0 length tissue")
+      return(NULL)
+    }
+  
+  
+  allComparisons = c()
+  
+  for (targetCell in targetCells)
+  {
+    
+    targetComparisons = c()
+  
+    for (sourceCell in sourceCells)
+    {
+      
+      print(targetCell)
+      print(sourceCell)
+      
+      newMarkers = FindMarkers(facsTiss, ident.1=c(targetCell), ident.2=c(sourceCell),only.pos=FALSE, test.use="MAST")
+      
+      
+      
+      outfname = gsub(" ", "_", paste(prefix, paste(tissueName, targetCell, sourceCell, sep = "___"), ".tsv", sep=""))
+      print(outfname)
+      
+      write.table(newMarkers, file = here("00_data_ingest", "sanne_analysis", "facs_analysis_excl", outfname) ,quote=FALSE, sep='\t')
+      
+      targetComparisons = append(targetComparisons, list(newMarkers))
+      
+    }
+
+    allComparisons = append(allComparisons, list(targetComparisons))
+    
+  }
+  
+  return(allComparisons)
+}
+
+```
+
+## WITHIN OWN TISSUE
+
+```{r results="hide", echo=FALSE}
+
+a = makeNewAnalysisFacs(facsKidneyEndo, c(facsKidneyCir, facsKidneyEpi, facsAllKidney), "kidney", "excl_")
+a = makeNewAnalysisFacs(facsLungEndo, c(facsLungCir, facsLungEpi, facsAllLung), "lung", "excl_")
+a = makeNewAnalysisFacs(facsAortaEndo, c(facsAortaCir, facsAortaEpi, facsAllAorta), "aorta", "excl_")
+a = makeNewAnalysisFacs(facsBladderEndo, c(facsBladderCir, facsBladderEpi, facsAllBladder), "bladder", "excl_")
+a = makeNewAnalysisFacs(facsLiverEndo, c(facsLiverCir, facsLiverEpi, facsAllLiver), "liver", "excl_")
+
+```
+
+## WITHIN OWN CLASS
+
+```{r results="hide", echo=FALSE}
+
+a=makeNewAnalysisFacs(facsKidneyEndo, c(facsLungEndo, facsAortaEndo, facsBladderEndo, facsLiverEndo), "kidney", "endo_excl_")
+a=makeNewAnalysisFacs(facsLungEndo, c(facsKidneyEndo, facsAortaEndo, facsBladderEndo, facsLiverEndo), "lung", "endo_excl_")
+a=makeNewAnalysisFacs(facsAortaEndo, c(facsLungEndo, facsKidneyEndo, facsBladderEndo, facsLiverEndo), "aorta", "endo_excl_")
+a=makeNewAnalysisFacs(facsBladderEndo, c(facsAortaEndo, facsLungEndo, facsKidneyEndo, facsLiverEndo), "bladder", "endo_excl_")
+a=makeNewAnalysisFacs(facsLiverEndo, c(facsAortaEndo, facsLungEndo, facsKidneyEndo, facsBladderEndo), "liver", "endo_excl_")
+
+```
+
+
+## AGAINST ALL OTHER BLOOD CIRCULATING STUFF
+
+```{r results="hide", echo=FALSE}
+a=makeNewAnalysisFacs(facsKidneyEndo, c(facsKidneyCir, facsLungCir, facsAortaCir, facsBladderCir, facsLiverCir), "kidney", "endo_cir_excl_")
+a=makeNewAnalysisFacs(facsLungEndo, c(facsLungCir, facsKidneyCir, facsAortaCir, facsBladderCir, facsLiverCir), "lung", "endo_cir_excl_")
+a=makeNewAnalysisFacs(facsAortaEndo, c(facsAortaCir, facsLungCir, facsKidneyCir, facsBladderCir, facsLiverCir), "aorta", "endo_cir_excl_")
+a=makeNewAnalysisFacs(facsBladderEndo, c(facsBladderCir, facsAortaCir, facsLungCir, facsKidneyCir, facsLiverCir), "bladder", "endo_cir_excl_")
+a=makeNewAnalysisFacs(facsLiverEndo, c(facsLiverCir, facsAortaCir, facsLungCir, facsKidneyCir, facsBladderCir), "liver", "endo_cir_excl_")
+```
+
+## AGAINST ALL OTHER EPITHELIAL
+
+```{r results="hide", echo=FALSE}
+a=makeNewAnalysisFacs(facsKidneyEndo, c(facsKidneyEpi, facsLungEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi), "kidney", "endo_epi_excl_")
+a=makeNewAnalysisFacs(facsLungEndo, c(facsLungEpi, facsKidneyEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi), "lung", "endo_epi_excl_")
+a=makeNewAnalysisFacs(facsAortaEndo, c(facsAortaEpi, facsLungEpi, facsKidneyEpi, facsBladderEpi, facsLiverEpi), "aorta", "endo_epi_excl_")
+a=makeNewAnalysisFacs(facsBladderEndo, c(facsBladderEpi, facsAortaEpi, facsLungEpi, facsKidneyEpi, facsLiverEpi), "bladder", "endo_epi_excl_")
+a=makeNewAnalysisFacs(facsLiverEndo, c(facsLiverEpi, facsAortaEpi, facsLungEpi, facsKidneyEpi, facsBladderEpi), "liver", "endo_epi_excl_")
+```
+
+
+
+## AGAINST ALL 
+
+```{r results="hide", echo=FALSE, message=F, warning=F}
+a=makeNewAnalysisFacs(facsKidneyEndo, c(facsKidneyEpi, facsLungEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi,facsKidneyCir, facsLungCir, facsAortaCir, facsBladderCir, facsLiverCir), "kidney", "endo_cirepi_excl_")
+a=makeNewAnalysisFacs(facsLungEndo, c(facsKidneyEpi, facsLungEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi,facsLungCir, facsKidneyCir, facsAortaCir, facsBladderCir, facsLiverCir), "lung", "endo_cirepi_excl_")
+a=makeNewAnalysisFacs(facsAortaEndo, c(facsKidneyEpi, facsLungEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi,facsAortaCir, facsLungCir, facsKidneyCir, facsBladderCir, facsLiverCir), "aorta", "endo_cirepi_excl_")
+a=makeNewAnalysisFacs(facsBladderEndo, c(facsKidneyEpi, facsLungEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi,facsBladderCir, facsAortaCir, facsLungCir, facsKidneyCir, facsLiverCir), "bladder", "endo_cirepi_excl_")
+a=makeNewAnalysisFacs(facsLiverEndo, c(facsKidneyEpi, facsLungEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi,facsLiverCir, facsAortaCir, facsLungCir, facsKidneyCir, facsBladderCir), "liver", "endo_cirepi_excl_")
+```
+
+
+
