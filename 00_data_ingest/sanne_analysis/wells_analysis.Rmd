@@ -28,7 +28,7 @@ We must first define the set of interesting tissues/cells
 
 ```{r}
 
-tissues_of_interest = c("Aorta", "Lung", "Large_Intestine", "Kidney", "Bladder", "Liver")
+tissues_of_interest = c("Aorta", "Lung", "Large_Intestine", "Kidney", "Bladder", "Liver", "Brain")
 
 aortaEndo = c("Vascular endothelial cell(Neonatal-Heart)", "Endothelial cell_Eln high(Neonatal-Heart)", "Endothelial cell_Enpp2 high(Neonatal-Heart)", "Endothelial cell_Igfbp5 high(Neonatal-Heart)")
 aortaEpi = c("Epithelial cell(Neonatal-Heart)")
@@ -456,6 +456,7 @@ write.table(lung_endo_rest_markers_wells, file = here("00_data_ingest", "sanne_a
 
 ```{r}
 
+
 makeNewAnalysiswells = function(targetCells, sourceCells, tissueName, prefix) {
     if (is.null(targetCells)|| is.null(sourceCells))
     {
@@ -476,44 +477,32 @@ makeNewAnalysiswells = function(targetCells, sourceCells, tissueName, prefix) {
   {
     
     targetComparisons = c()
-  
-    for (sourceCell in sourceCells)
-    {
-      
+    
+    for(sourceCell in sourceCells) {
+
       print(targetCell)
       print(sourceCell)
       
+      outfname = gsub(" ", "_", paste(prefix, paste(tissueName, targetCell, sourceCell, sep = "___"), ".tsv", sep=""))
+      print(outfname)
+      
       tryCatch({
         newMarkers = FindMarkers(mca, ident.1=c(targetCell), ident.2=c(sourceCell),only.pos=FALSE, test.use="MAST")
-        
-        outfname = gsub(" ", "_", paste(prefix, paste(tissueName, targetCell, sourceCell, sep = "___"), ".tsv", sep=""))
-        print(outfname)
       
         write.table(newMarkers, file = here("00_data_ingest", "sanne_analysis", "wells_analysis_excl", outfname) ,quote=FALSE, sep='\t')
       },
-                
-          error=function(e) 
-            {
-            
-            outfname = gsub(" ", "_", paste(prefix, paste(tissueName, targetCell, sourceCell, sep = "___"), ".tsv", sep=""))
-            
-            print("Error in FindMarkers")
-            print(outfname)
-            print(e)
-            
-          }
+      error = function(e)
+      {
+        print("Error in finding markers")
+        print(outfname)
+        
+      }
       )
-                
-      
-      
       
 
-      
-      #targetComparisons = append(targetComparisons, list(newMarkers))
-      
-    }
 
-    #allComparisons = append(allComparisons, list(targetComparisons))
+    } #endfor
+
     
   }
   
@@ -524,7 +513,7 @@ makeNewAnalysiswells = function(targetCells, sourceCells, tissueName, prefix) {
 
 ## WITHIN OWN TISSUE
 
-```{r results="hide", echo=FALSE}
+```{r results="hide", echo=FALSE, message=FALSE}
 
 a = makeNewAnalysiswells(wellsKidneyEndo, c(wellsKidneyCir, wellsKidneyEpi, wellsAllKidney), "kidney", "excl_")
 a = makeNewAnalysiswells(wellsLungEndo, c(wellsLungCir, wellsLungEpi, wellsAllLung), "lung", "excl_")
@@ -538,7 +527,7 @@ a = makeNewAnalysiswells(wellsLintEndo, c(wellsLintCir, wellsLintEpi, wellsAllLi
 
 ## WITHIN OWN CLASS
 
-```{r results="hide", echo=FALSE}
+```{r results="hide", echo=FALSE, message=FALSE}
 
 a=makeNewAnalysiswells(wellsKidneyEndo, c(wellsLungEndo, wellsAortaEndo, wellsBladderEndo, wellsLiverEndo, wellsLintEndo), "kidney", "endo_excl_")
 a=makeNewAnalysiswells(wellsLungEndo, c(wellsKidneyEndo, wellsAortaEndo, wellsBladderEndo, wellsLiverEndo, wellsLintEndo), "lung", "endo_excl_")
@@ -553,7 +542,7 @@ a=makeNewAnalysiswells(wellsLintEndo, c(wellsAortaEndo, wellsLungEndo, wellsKidn
 
 ## AGAINST ALL OTHER BLOOD CIRCULATING STUFF
 
-```{r results="hide", echo=FALSE}
+```{r results="hide", echo=FALSE, message=FALSE}
 a=makeNewAnalysiswells(wellsKidneyEndo, c(wellsKidneyCir, wellsLungCir, wellsAortaCir, wellsBladderCir, wellsLiverCir), "kidney", "endo_cir_excl_")
 a=makeNewAnalysiswells(wellsLungEndo, c(wellsLungCir, wellsKidneyCir, wellsAortaCir, wellsBladderCir, wellsLiverCir), "lung", "endo_cir_excl_")
 a=makeNewAnalysiswells(wellsAortaEndo, c(wellsAortaCir, wellsLungCir, wellsKidneyCir, wellsBladderCir, wellsLiverCir), "aorta", "endo_cir_excl_")
@@ -565,7 +554,7 @@ a=makeNewAnalysiswells(wellsLintEndo, c(wellsLiverCir, wellsAortaCir, wellsLungC
 
 ## AGAINST ALL OTHER EPITHELIAL
 
-```{r results="hide", echo=FALSE}
+```{r results="hide", echo=FALSE, message=FALSE}
 a=makeNewAnalysiswells(wellsKidneyEndo, c(wellsKidneyEpi, wellsLungEpi, wellsAortaEpi, wellsBladderEpi, wellsLiverEpi), "kidney", "endo_epi_excl_")
 a=makeNewAnalysiswells(wellsLungEndo, c(wellsLungEpi, wellsKidneyEpi, wellsAortaEpi, wellsBladderEpi, wellsLiverEpi), "lung", "endo_epi_excl_")
 a=makeNewAnalysiswells(wellsAortaEndo, c(wellsAortaEpi, wellsLungEpi, wellsKidneyEpi, wellsBladderEpi, wellsLiverEpi), "aorta", "endo_epi_excl_")

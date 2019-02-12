@@ -24,7 +24,7 @@ library(here)
 library(Seurat)
 source(here("00_data_ingest", "02_tissue_analysis_rmd", "boilerplate.R"))
 
-tissues_of_interest = c("Aorta", "Lung", "Large_Intestine", "Kidney", "Bladder", "Liver")
+tissues_of_interest = c("Aorta", "Lung", "Large_Intestine", "Kidney", "Bladder", "Liver", "Brain_Non-Myeloid")
 
 processSeurat = function(facsTiss, scale){
   facsTiss <- NormalizeData(object = facsTiss, scale.factor = scale)
@@ -175,13 +175,18 @@ facsLiverEndo = c("Liver.endothelial cell of hepatic sinusoid")
 facsLiverEpi = c()
 facsLiverCir = c("Liver.natural killer cell", "Liver.B cell")
 
+facsBrainEndo = c("Brain_Non-Myeloid.endothelial cell")
+facsBrainEpi = c("Brain_Non-Myeloid.brain pericyte")
+facsBrainCir = c()
+
 
 facsAortaCells = c(facsAortaEndo,facsAortaEpi, facsAortaCir)
 facsLungCells = c(facsLungEndo,facsLungEpi, facsLungCir)
 facsLintCells = c(facsLintEndo,facsLintEpi, facsLintCir)
 facsKidneyCells = c(facsKidneyEndo,facsKidneyEpi, facsKidneyCir)
-facsBladderCells = c(facsBladderEndo,facsBladderEpi, facsBladderEpi)
-facsLiverCells = c(facsLiverEndo, facsLiverEpi, facsLiverEpi)
+facsBladderCells = c(facsBladderEndo,facsBladderEpi, facsBladderCir)
+facsLiverCells = c(facsLiverEndo, facsLiverEpi, facsLiverCir)
+facsBrainCells = c(facsBrainEndo, facsBrainEpi, facsBrainCir)
 
 
 facsAllAorta = unique(grep(pattern="Aorta", x=Idents(facsTiss), value = TRUE))
@@ -202,6 +207,9 @@ facsAllBladder = setdiff(facsAllBladder, facsBladderCells)
 facsAllLiver = unique(grep(pattern="Liver", x=Idents(facsTiss), value = TRUE))
 facsAllLiver = setdiff(facsAllLiver, facsLiverCells)
 
+facsAllBrain = unique(grep(pattern="Brain", x=Idents(facsTiss), value = TRUE))
+facsAllBrain = setdiff(facsAllBrain, facsBrainCells)
+
 ```
 
 ```{r}
@@ -212,12 +220,14 @@ print(facsLungCells)
 print(facsKidneyCells)
 print(facsBladderCells)
 print(facsLiverCells)
+print(facsBrainCells)
 
 print(facsAllAorta)
 print(facsAllLung)
 print(facsAllKidney)
 print(facsAllBladder)
 print(facsAllLiver)
+print(facsAllBrain)
 
 
 ```
@@ -573,6 +583,7 @@ a = makeNewAnalysisFacs(facsLungEndo, c(facsLungCir, facsLungEpi, facsAllLung), 
 a = makeNewAnalysisFacs(facsAortaEndo, c(facsAortaCir, facsAortaEpi, facsAllAorta), "aorta", "excl_")
 a = makeNewAnalysisFacs(facsBladderEndo, c(facsBladderCir, facsBladderEpi, facsAllBladder), "bladder", "excl_")
 a = makeNewAnalysisFacs(facsLiverEndo, c(facsLiverCir, facsLiverEpi, facsAllLiver), "liver", "excl_")
+a = makeNewAnalysisFacs(facsBrainEndo, c(facsBrainCir, facsBrainEpi, facsAllBrain), "brain", "excl_")
 
 ```
 
@@ -580,11 +591,12 @@ a = makeNewAnalysisFacs(facsLiverEndo, c(facsLiverCir, facsLiverEpi, facsAllLive
 
 ```{r results="hide", echo=FALSE}
 
-a=makeNewAnalysisFacs(facsKidneyEndo, c(facsLungEndo, facsAortaEndo, facsBladderEndo, facsLiverEndo), "kidney", "endo_excl_")
-a=makeNewAnalysisFacs(facsLungEndo, c(facsKidneyEndo, facsAortaEndo, facsBladderEndo, facsLiverEndo), "lung", "endo_excl_")
-a=makeNewAnalysisFacs(facsAortaEndo, c(facsLungEndo, facsKidneyEndo, facsBladderEndo, facsLiverEndo), "aorta", "endo_excl_")
-a=makeNewAnalysisFacs(facsBladderEndo, c(facsAortaEndo, facsLungEndo, facsKidneyEndo, facsLiverEndo), "bladder", "endo_excl_")
-a=makeNewAnalysisFacs(facsLiverEndo, c(facsAortaEndo, facsLungEndo, facsKidneyEndo, facsBladderEndo), "liver", "endo_excl_")
+a=makeNewAnalysisFacs(facsKidneyEndo, c(facsLungEndo, facsAortaEndo, facsBladderEndo, facsLiverEndo, facsBrainEndo), "kidney", "endo_excl_")
+a=makeNewAnalysisFacs(facsLungEndo, c(facsKidneyEndo, facsAortaEndo, facsBladderEndo, facsLiverEndo, facsBrainEndo), "lung", "endo_excl_")
+a=makeNewAnalysisFacs(facsAortaEndo, c(facsLungEndo, facsKidneyEndo, facsBladderEndo, facsLiverEndo, facsBrainEndo), "aorta", "endo_excl_")
+a=makeNewAnalysisFacs(facsBladderEndo, c(facsAortaEndo, facsLungEndo, facsKidneyEndo, facsLiverEndo, facsBrainEndo), "bladder", "endo_excl_")
+a=makeNewAnalysisFacs(facsLiverEndo, c(facsAortaEndo, facsLungEndo, facsKidneyEndo, facsBladderEndo, facsBrainEndo), "liver", "endo_excl_")
+a=makeNewAnalysisFacs(facsBrainEndo, c(facsAortaEndo, facsLungEndo, facsKidneyEndo, facsBladderEndo, facsLiverEndo), "brain", "endo_excl_")
 
 ```
 
@@ -592,21 +604,23 @@ a=makeNewAnalysisFacs(facsLiverEndo, c(facsAortaEndo, facsLungEndo, facsKidneyEn
 ## AGAINST ALL OTHER BLOOD CIRCULATING STUFF
 
 ```{r results="hide", echo=FALSE}
-a=makeNewAnalysisFacs(facsKidneyEndo, c(facsKidneyCir, facsLungCir, facsAortaCir, facsBladderCir, facsLiverCir), "kidney", "endo_cir_excl_")
-a=makeNewAnalysisFacs(facsLungEndo, c(facsLungCir, facsKidneyCir, facsAortaCir, facsBladderCir, facsLiverCir), "lung", "endo_cir_excl_")
-a=makeNewAnalysisFacs(facsAortaEndo, c(facsAortaCir, facsLungCir, facsKidneyCir, facsBladderCir, facsLiverCir), "aorta", "endo_cir_excl_")
-a=makeNewAnalysisFacs(facsBladderEndo, c(facsBladderCir, facsAortaCir, facsLungCir, facsKidneyCir, facsLiverCir), "bladder", "endo_cir_excl_")
-a=makeNewAnalysisFacs(facsLiverEndo, c(facsLiverCir, facsAortaCir, facsLungCir, facsKidneyCir, facsBladderCir), "liver", "endo_cir_excl_")
+a=makeNewAnalysisFacs(facsKidneyEndo, c(facsKidneyCir, facsLungCir, facsAortaCir, facsBladderCir, facsLiverCir, facsBrainCir), "kidney", "endo_cir_excl_")
+a=makeNewAnalysisFacs(facsLungEndo, c(facsLungCir, facsKidneyCir, facsAortaCir, facsBladderCir, facsLiverCir, facsBrainCir), "lung", "endo_cir_excl_")
+a=makeNewAnalysisFacs(facsAortaEndo, c(facsAortaCir, facsLungCir, facsKidneyCir, facsBladderCir, facsLiverCir, facsBrainCir), "aorta", "endo_cir_excl_")
+a=makeNewAnalysisFacs(facsBladderEndo, c(facsBladderCir, facsAortaCir, facsLungCir, facsKidneyCir, facsLiverCir, facsBrainCir), "bladder", "endo_cir_excl_")
+a=makeNewAnalysisFacs(facsLiverEndo, c(facsLiverCir, facsAortaCir, facsLungCir, facsKidneyCir, facsBladderCir, facsBrainCir), "liver", "endo_cir_excl_")
+a=makeNewAnalysisFacs(facsBrainEndo, c(facsLiverCir, facsAortaCir, facsLungCir, facsKidneyCir, facsBladderCir, facsBrainCir), "brain", "endo_cir_excl_")
 ```
 
 ## AGAINST ALL OTHER EPITHELIAL
 
 ```{r results="hide", echo=FALSE}
-a=makeNewAnalysisFacs(facsKidneyEndo, c(facsKidneyEpi, facsLungEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi), "kidney", "endo_epi_excl_")
-a=makeNewAnalysisFacs(facsLungEndo, c(facsLungEpi, facsKidneyEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi), "lung", "endo_epi_excl_")
-a=makeNewAnalysisFacs(facsAortaEndo, c(facsAortaEpi, facsLungEpi, facsKidneyEpi, facsBladderEpi, facsLiverEpi), "aorta", "endo_epi_excl_")
-a=makeNewAnalysisFacs(facsBladderEndo, c(facsBladderEpi, facsAortaEpi, facsLungEpi, facsKidneyEpi, facsLiverEpi), "bladder", "endo_epi_excl_")
-a=makeNewAnalysisFacs(facsLiverEndo, c(facsLiverEpi, facsAortaEpi, facsLungEpi, facsKidneyEpi, facsBladderEpi), "liver", "endo_epi_excl_")
+a=makeNewAnalysisFacs(facsKidneyEndo, c(facsKidneyEpi, facsLungEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi, facsBrainEpi), "kidney", "endo_epi_excl_")
+a=makeNewAnalysisFacs(facsLungEndo, c(facsLungEpi, facsKidneyEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi, facsBrainEpi), "lung", "endo_epi_excl_")
+a=makeNewAnalysisFacs(facsAortaEndo, c(facsAortaEpi, facsLungEpi, facsKidneyEpi, facsBladderEpi, facsLiverEpi, facsBrainEpi), "aorta", "endo_epi_excl_")
+a=makeNewAnalysisFacs(facsBladderEndo, c(facsBladderEpi, facsAortaEpi, facsLungEpi, facsKidneyEpi, facsLiverEpi, facsBrainEpi), "bladder", "endo_epi_excl_")
+a=makeNewAnalysisFacs(facsLiverEndo, c(facsLiverEpi, facsAortaEpi, facsLungEpi, facsKidneyEpi, facsBladderEpi, facsBrainEpi), "liver", "endo_epi_excl_")
+a=makeNewAnalysisFacs(facsBrainEndo, c(facsLiverEpi, facsAortaEpi, facsLungEpi, facsKidneyEpi, facsBladderEpi, facsBrainEpi), "brain", "endo_epi_excl_")
 ```
 
 
@@ -614,11 +628,12 @@ a=makeNewAnalysisFacs(facsLiverEndo, c(facsLiverEpi, facsAortaEpi, facsLungEpi, 
 ## AGAINST ALL 
 
 ```{r results="hide", echo=FALSE, message=F, warning=F}
-a=makeNewAnalysisFacs(facsKidneyEndo, c(facsKidneyEpi, facsLungEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi,facsKidneyCir, facsLungCir, facsAortaCir, facsBladderCir, facsLiverCir), "kidney", "endo_cirepi_excl_")
-a=makeNewAnalysisFacs(facsLungEndo, c(facsKidneyEpi, facsLungEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi,facsLungCir, facsKidneyCir, facsAortaCir, facsBladderCir, facsLiverCir), "lung", "endo_cirepi_excl_")
-a=makeNewAnalysisFacs(facsAortaEndo, c(facsKidneyEpi, facsLungEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi,facsAortaCir, facsLungCir, facsKidneyCir, facsBladderCir, facsLiverCir), "aorta", "endo_cirepi_excl_")
-a=makeNewAnalysisFacs(facsBladderEndo, c(facsKidneyEpi, facsLungEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi,facsBladderCir, facsAortaCir, facsLungCir, facsKidneyCir, facsLiverCir), "bladder", "endo_cirepi_excl_")
-a=makeNewAnalysisFacs(facsLiverEndo, c(facsKidneyEpi, facsLungEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi,facsLiverCir, facsAortaCir, facsLungCir, facsKidneyCir, facsBladderCir), "liver", "endo_cirepi_excl_")
+a=makeNewAnalysisFacs(facsKidneyEndo, c(facsKidneyEpi, facsLungEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi,facsKidneyCir, facsLungCir, facsAortaCir, facsBladderCir, facsLiverCir, facsBrainEpi, facsBrainCir), "kidney", "endo_cirepi_excl_")
+a=makeNewAnalysisFacs(facsLungEndo, c(facsKidneyEpi, facsLungEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi,facsLungCir, facsKidneyCir, facsAortaCir, facsBladderCir, facsLiverCir, facsBrainEpi, facsBrainCir), "lung", "endo_cirepi_excl_")
+a=makeNewAnalysisFacs(facsAortaEndo, c(facsKidneyEpi, facsLungEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi,facsAortaCir, facsLungCir, facsKidneyCir, facsBladderCir, facsLiverCir, facsBrainEpi, facsBrainCir), "aorta", "endo_cirepi_excl_")
+a=makeNewAnalysisFacs(facsBladderEndo, c(facsKidneyEpi, facsLungEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi,facsBladderCir, facsAortaCir, facsLungCir, facsKidneyCir, facsLiverCir, facsBrainEpi, facsBrainCir), "bladder", "endo_cirepi_excl_")
+a=makeNewAnalysisFacs(facsLiverEndo, c(facsKidneyEpi, facsLungEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi,facsLiverCir, facsAortaCir, facsLungCir, facsKidneyCir, facsBladderCir, facsBrainEpi, facsBrainCir), "liver", "endo_cirepi_excl_")
+a=makeNewAnalysisFacs(facsBrainEndo, c(facsKidneyEpi, facsLungEpi, facsAortaEpi, facsBladderEpi, facsLiverEpi,facsLiverCir, facsAortaCir, facsLungCir, facsKidneyCir, facsBladderCir, facsBrainEpi, facsBrainCir), "brain", "endo_cirepi_excl_")
 ```
 
 
