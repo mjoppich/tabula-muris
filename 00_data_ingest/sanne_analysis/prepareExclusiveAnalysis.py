@@ -51,6 +51,10 @@ def makeSubcellularLocations(subcellStr):
     return asublocs
 
 
+cacheGene2Subloc = defaultdict(set)
+cacheGene2Pfam = defaultdict(set)
+cacheGene2Interpro = defaultdict(set)
+
 
 def fetchUniprotInfo(geneList):
 
@@ -62,22 +66,59 @@ def fetchUniprotInfo(geneList):
     if len(geneList) == 0:
         return gene2subloc, gene2pfam, gene2interpro
 
-    up = UniprotStore()
-    allConvertedIDs = up.fetch(GeneIdentity.GENE_NAME, geneList, toEntities=[GeneIdentity.TAXID, GeneIdentity.ENSEMBL, GeneIdentity.SUBCELLULAR_LOCATION, GeneIdentity.INTERPRO, GeneIdentity.PFAM, GeneIdentity.GENE_SYMBOL], customParams={"taxon": "Mouse [10090]"})
 
-    #print(allConvertedIDs)
-    header = allConvertedIDs.getIdxHeader()
+    newGeneList = [x for x in geneList if not x.upper() in cacheGene2Subloc]
 
-    for row in allConvertedIDs:
-        geneID = row[header[GeneIdentity.GENE_SYMBOL]]
-        sublocs = row[header[GeneIdentity.SUBCELLULAR_LOCATION]]
+    print("Calling uniprot for genes: ", len(newGeneList))
 
-        sublocs = makeSubcellularLocations(sublocs)
+    if len(newGeneList) > 0:
 
-        gene2subloc[geneID] = sublocs
+        try:
+            up = UniprotStore()
+            allConvertedIDs = up.fetch(GeneIdentity.GENE_NAME, newGeneList, toEntities=[GeneIdentity.TAXID, GeneIdentity.ENSEMBL, GeneIdentity.SUBCELLULAR_LOCATION, GeneIdentity.INTERPRO, GeneIdentity.PFAM, GeneIdentity.GENE_SYMBOL], customParams={"taxon": "Mouse [10090]"})
 
-        #gene2pfam[geneID].add("")
-        #gene2interpro[geneID].add("")
+            #print(allConvertedIDs)
+            header = allConvertedIDs.getIdxHeader()
+
+            for row in allConvertedIDs:
+                geneID = row[header[GeneIdentity.GENE_SYMBOL]].upper()
+                sublocs = row[header[GeneIdentity.SUBCELLULAR_LOCATION]]
+                sublocs = makeSubcellularLocations(sublocs)
+
+
+                pfams = row[header[GeneIdentity.PFAM]]
+                interpros = row[header[GeneIdentity.INTERPRO]]
+
+                if pfams != None:
+                    pfams = [x.strip() for x in pfams.split(";")]
+                    pfams = [x for x in pfams if len(x) > 0]
+
+                    cacheGene2Pfam[geneID] = pfams
+
+                if interpros != None:
+                    interpros = [x.strip() for x in interpros.split(";")]
+                    interpros = [x for x in interpros if len(x) > 0]
+
+                    cacheGene2Interpro[geneID] = interpros
+
+                cacheGene2Subloc[geneID] = sublocs
+
+                gene2subloc[geneID] = sublocs
+                gene2pfam[geneID] = pfams
+                gene2interpro[geneID] = interpros
+        except:
+            print("Uniprot call failed")
+            pass
+        
+        print("Uniprot call ended")
+
+    oldGenes = [x for x in geneList if not x in newGeneList]
+
+    for x in oldGenes:
+        geneID=x.upper()
+        gene2subloc[geneID] = cacheGene2Subloc.get(geneID, None)
+        gene2pfam[geneID] = cacheGene2Pfam.get(geneID, None)
+        gene2interpro[geneID] = cacheGene2Interpro.get(geneID, None)
 
     return gene2subloc, gene2pfam, gene2interpro
 
@@ -135,8 +176,36 @@ def loadTMResults(infile):
 
         gene2locev[gene][location].add(pmid)
 
+    for gene in gene2locev:
+        for location in gene2locev[gene]:
+            gene2locev[gene][location] = natsorted(gene2locev[gene][location], reverse=True)
+
     return gene2locev
 
+
+def makeShortTMList(gene2locev, geneID):
+
+    geneID = geneID.upper()
+
+    allLocEvTuples = []
+    
+    curRoundIdx = 0
+    roundAdded = 1
+    while len(allLocEvTuples) < 10 and roundAdded > 0:
+
+        roundAdded = 0
+        
+        for location in gene2locev[geneID]:
+
+            if len(gene2locev[geneID][location]) > curRoundIdx:
+
+                pmid = gene2locev[geneID][location][curRoundIdx]
+                allLocEvTuples.append( (location, pmid) )
+                roundAdded += 1
+
+        curRoundIdx += 1
+
+    return sorted(allLocEvTuples, key=lambda x: x[0])
 
 def makeShortedList(inputlist):
 
@@ -217,6 +286,10 @@ if __name__ == '__main__':
     facsLiverEndo = ["Liver.endothelial cell of hepatic sinusoid"]
     facsLiverEpi = []
     facsLiverCir = ["Liver.natural killer cell", "Liver.B cell"]
+
+    facsBrainEndo = ["Brain_Non-Myeloid.endothelial cell"]
+    facsBrainEpi = ["Brain_Non-Myeloid.brain pericyte"]
+    facsBrainCir = []
 
     """
     WELLS CELLS
@@ -316,12 +389,14 @@ if __name__ == '__main__':
     method2lists["facs"]["lung"]["epi"] = facsLungEpi
     method2lists["facs"]["kidney"]["epi"] = facsKidneyEpi
     method2lists["facs"]["bladder"]["epi"] = facsBladderEpi
+    method2lists["facs"]["brain"]["epi"] = facsBrainEpi
 
     method2lists["facs"]["aorta"]["endo"] = facsAortaEndo
     method2lists["facs"]["liver"]["endo"] = facsLiverEndo
     method2lists["facs"]["lung"]["endo"] = facsLungEndo
     method2lists["facs"]["kidney"]["endo"] = facsKidneyEndo
     method2lists["facs"]["bladder"]["endo"] = facsBladderEndo
+    method2lists["facs"]["brain"]["endo"] = facsBrainEndo
 
 
     method2lists["facs"]["aorta"]["cir"] = facsAortaCir
@@ -329,6 +404,7 @@ if __name__ == '__main__':
     method2lists["facs"]["lung"]["cir"] = facsLungCir
     method2lists["facs"]["kidney"]["cir"] = facsKidneyCir
     method2lists["facs"]["bladder"]["cir"] = facsBladderCir
+    method2lists["facs"]["brain"]["cir"] = facsBrainCir
 
     """
     WELLS
@@ -513,70 +589,14 @@ if __name__ == '__main__':
                 totalIntersect = totalIntersect.intersection(compType2DE[method])
 
 
+            """
+
+            ABOVE: PREPARE DATA
+
+            BELOW: UPDATE UNIONDF
+
+            """
             print(len(totalUnion))
-            print(len(totalIntersect))
-            vennDiagPath = ""
-
-            columns = ["GeneID", "Subcellular Locations", "TM Locations"]
-
-            method2pref = {}
-            for method in compTissuesDE:
-                methodPrefix = str(method[0]) +" vs. "+ str(method[1])+" "
-                method2pref[method] = methodPrefix
-                columns.append(methodPrefix + "Adjusted P-Value")
-                columns.append(methodPrefix + "Average logFC")
-
-
-            tiLocation, tiPfam, tiInterpro = fetchUniprotInfo(totalIntersect)
-
-
-            outDF = DataFrame()
-            outDF.addColumns(columns)
-
-            if len(totalIntersect) > 0:
-
-                performedComparisons[(tlist, slist)] = len(totalIntersect)
-
-                for geneID in totalIntersect:
-
-                        dfDict = {
-                            "GeneID": "<a target=\"_blank\" href=\"https://www.uniprot.org/uniprot/?query="+geneID+"%20and%20organism:10090\">"+geneID+"</a>"
-                        }
-
-                        dfDict["Subcellular Locations"] = "; ".join(tiLocation.get(geneID, set()))
-                        dfDict["TM Locations"] = ""
-
-                        tmLocation = gene2locev.get(geneID.upper(), None)
-
-                        if tmLocation != None:
-
-                            allLinkStr = []
-
-                            for location in tmLocation:
-                                for pmid in makeShortedList(tmLocation[location]):
-                                    linkstr = "<a target=\"_blank\" href=\"{link}\">{desc}</a>".format(link="https://www.ncbi.nlm.nih.gov/pubmed/"+str(pmid), desc=location + " ("+str(pmid)+")")
-                                    allLinkStr.append(linkstr)
-
-                            dfDict["TM Locations"] = "</br>".join(allLinkStr)
-
-                        for method in compTissuesDE:
-
-                            geneMethodLine = compType2line[method][geneID]
-                            methodIdx = compType2idx[method]
-
-                            dfDict[method2pref[method] + "Adjusted P-Value"] = geneMethodLine[methodIdx['p_val_adj']]
-                            dfDict[method2pref[method] + "Average logFC"] = geneMethodLine[methodIdx['avg_logFC']]
-
-                        dr = DataRow.fromDict(dfDict)
-                        outDF.addRow(dr)
-
-                    #print(geneID, method, geneMethodLine[methodIdx['p_val_adj']], geneMethodLine[methodIdx['avg_logFC']])
-                
-
-
-            (fdHead, fdBody) = (None, "")
-
-
 
             columns = []
 
@@ -587,13 +607,7 @@ if __name__ == '__main__':
                 columns.append(methodPrefix + "Adjusted P-Value")
                 columns.append(methodPrefix + "Average logFC")
 
-
-            #combinedDF = DataFrame()
-            #combinedDF.addColumns(["GeneID"] + columns)
             unionDF.addColumns(columns, ignoreDuplicates=True)
-
-            print("Total union", len(totalUnion))
-
 
             updateDRs = []
             for geneID in totalUnion:
@@ -619,11 +633,107 @@ if __name__ == '__main__':
             
             unionDF.updateRowIndexed("GeneID", updateDRs, addIfNotFound=True)
 
+
+            """
+
+            BELOW: ADD COMPARISON IF ENOUGH CELLS
+
+            """
+            (head, body) = ("", "<h4>Not enough cell-types for comparison</h4>")
+            outDF = None
+
+            if len(slist)+2 >= len(allSources):
+
+                print(len(totalIntersect))
+                vennDiagPath = ""
+
+                columns = ["GeneID", "Subcellular Locations", "TM Locations", "PFAM", "Interpro"]
+
+                method2pref = {}
+                for method in compTissuesDE:
+                    methodPrefix = str(method[0]) +" vs. "+ str(method[1])+" "
+                    method2pref[method] = methodPrefix
+                    columns.append(methodPrefix + "Adjusted P-Value")
+                    columns.append(methodPrefix + "Average logFC")
+
+
+                tiLocation, tiPfam, tiInterpro = fetchUniprotInfo(totalIntersect)
+
+
+                outDF = DataFrame()
+                outDF.addColumns(columns)
+
+                (head, body) = ("", "<h4>No Intersection</h4>")
+
+                if len(totalIntersect) > 0:
+
+                    performedComparisons[(tlist, slist)] = len(totalIntersect)
+
+                    for geneID in totalIntersect:
+
+                            dfDict = {
+                                "GeneID": "<a target=\"_blank\" href=\"https://www.uniprot.org/uniprot/?query="+geneID+"%20and%20organism:10090\">"+geneID+"</a>"
+                            }
+
+                            dfDict["Subcellular Locations"] = "; ".join(tiLocation.get(geneID.upper(), set()))
+                            dfDict["TM Locations"] = ""
+
+                            dfDict["PFAM"] = ""
+                            dfDict["Interpro"] = ""
+                            
+                            tmPfams = tiPfam.get(geneID.upper(), None)
+                            tmInterpros = tiInterpro.get(geneID.upper(), None)
+                            tmLocation = gene2locev.get(geneID.upper(), None)
+
+                            if tmLocation != None:
+
+                                geneLocEvs = makeShortTMList(gene2locev, geneID.upper())
+                                allLinkStr = []
+
+                                for location, pmid in geneLocEvs:
+                                    linkstr = "<a target=\"_blank\" href=\"{link}\">{desc}</a>".format(link="https://www.ncbi.nlm.nih.gov/pubmed/"+str(pmid), desc=location + " ("+str(pmid)+")")
+                                    allLinkStr.append(linkstr)
+
+                                dfDict["TM Locations"] = "</br>".join(allLinkStr)
+
+
+                            if tmPfams != None:
+                                allLinkStr = []
+
+                                for pfamID in tmPfams:
+                                    linkstr = "<a target=\"_blank\" href=\"{link}\">{desc}</a>".format(link="https://pfam.xfam.org/family/"+str(pfamID), desc=pfamID)
+                                    allLinkStr.append(linkstr)
+
+                                dfDict["PFAM"] = "</br>".join(allLinkStr)
+
+                            if tmInterpros != None:
+                                allLinkStr = []
+
+                                for interproID in tmInterpros:
+                                    linkstr = "<a target=\"_blank\" href=\"{link}\">{desc}</a>".format(link="https://www.ebi.ac.uk/interpro/entry/"+str(interproID), desc=interproID)
+                                    allLinkStr.append(linkstr)
+
+                                dfDict["Interpro"] = "</br>".join(allLinkStr)
+
+                            for method in compTissuesDE:
+
+                                geneMethodLine = compType2line[method][geneID]
+                                methodIdx = compType2idx[method]
+
+                                dfDict[method2pref[method] + "Adjusted P-Value"] = geneMethodLine[methodIdx['p_val_adj']]
+                                dfDict[method2pref[method] + "Average logFC"] = geneMethodLine[methodIdx['avg_logFC']]
+
+                            dr = DataRow.fromDict(dfDict)
+                            outDF.addRow(dr)
+                
+
+
+
+            print("Total union", len(totalUnion))
+
             dfcount += 1
 
-            (head, body) = ("", "<h4>No Intersection</h4>")
-
-            if len(totalIntersect) > 0:
+            if len(totalIntersect) > 0 and outDF != None:
                 (head, body) = outDF._makeHTMLString("diffdf" + str(dfcount))
                 
                 testname = os.path.splitext(args.output.name)[0] + "___" + "_".join(tliststr) + "_vs_" + "_".join(sliststr) + ".intersect"
@@ -656,8 +766,8 @@ if __name__ == '__main__':
     (headUnion, bodyUnion) = unionDF._makeHTMLString("uniondf" + str(dfcount))
 
     unionOutBase = os.path.splitext(args.output.name)[0] + "_union"
-    outDF.export(unionOutBase + ".xlsx", ExportTYPE.XLSX)
-    outDF.export(unionOutBase + ".tsv", ExportTYPE.TSV)
+    unionDF.export(unionOutBase + ".xlsx", ExportTYPE.XLSX)
+    unionDF.export(unionOutBase + ".tsv", ExportTYPE.TSV)
 
 
     args.output.write("<h1>All Comparisons</h1>")
