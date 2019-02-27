@@ -251,6 +251,9 @@ makeAnalysis <- function( tissues1, tissues2)
       return(NULL)
     }
   
+    print(tissues1)
+    print(tissues2)
+  
     newMarkers = FindMarkers(facsTiss, ident.1=tissues1, ident.2=tissues2,only.pos=TRUE, test.use="MAST")
     return(newMarkers)
 }
@@ -261,6 +264,159 @@ makeAnalysis <- function( tissues1, tissues2)
 Now we can run the analysis against each other ...
 
 # Analysis: Endothelial Cells against each other
+
+
+
+
+## Aorta
+```{r}
+
+
+facs_endo_aorta_lung = makeAnalysis(facsAortaEndo, facsLungEndo)
+
+write.table(facs_endo_aorta_lung, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_aorta_lung", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+facs_endo_aorta_kidney = makeAnalysis(facsAortaEndo, facsKidneyEndo)
+
+write.table(facs_endo_aorta_kidney, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_aorta_kidney", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
+facs_endo_aorta_liver = makeAnalysis(facsAortaEndo, facsLiverEndo)
+
+write.table(facs_endo_aorta_liver, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_aorta_liver", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
+facs_endo_aorta_brain = makeAnalysis(facsAortaEndo, facsBrainEndo)
+
+write.table(facs_endo_aorta_brain, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_aorta_brain", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
+facs_endo_aorta_all = makeAnalysis(facsAortaEndo, c(facsLungEndo, facsKidneyEndo, facsLiverEndo, facsBrainEndo))
+
+write.table(facs_endo_aorta_all, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_aorta_all", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+```
+
+## Lung
+```{r}
+
+
+facs_endo_lung_aorta = makeAnalysis(facsLungEndo, facsAortaEndo)
+
+write.table(facs_endo_lung_aorta, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_lung_aorta", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+facs_endo_lung_kidney = makeAnalysis(facsLungEndo, facsKidneyEndo)
+
+write.table(facs_endo_lung_kidney, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_lung_kidney", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
+facs_endo_lung_liver = makeAnalysis(facsLungEndo, facsLiverEndo)
+
+write.table(facs_endo_lung_liver, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_lung_liver", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
+facs_endo_lung_brain = makeAnalysis(facsLungEndo, facsBrainEndo)
+
+write.table(facs_endo_lung_brain, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_lung_brain", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
+facs_endo_lung_all = makeAnalysis(facsLungEndo, c(facsAortaEndo, facsKidneyEndo, facsLiverEndo, facsBrainEndo))
+
+write.table(facs_endo_lung_all, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_lung_all", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+```
+
+
+## Kidney
+```{r}
+
+
+facs_endo_kidney_aorta = makeAnalysis(facsKidneyEndo, facsAortaEndo)
+
+write.table(facs_endo_kidney_aorta, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_kidney_aorta", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+facs_endo_kidney_lung = makeAnalysis(facsKidneyEndo, facsLungEndo)
+
+write.table(facs_endo_kidney_lung, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_kidney_lung", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
+facs_endo_kidney_liver = makeAnalysis(facsKidneyEndo, facsLiverEndo)
+
+write.table(facs_endo_kidney_liver, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_kidney_liver", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
+facs_endo_kidney_brain = makeAnalysis(facsKidneyEndo, facsBrainEndo)
+
+write.table(facs_endo_kidney_brain, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_kidney_brain", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
+facs_endo_kidney_all = makeAnalysis(facsKidneyEndo, c(facsAortaEndo, facsLungEndo, facsLiverEndo, facsBrainEndo))
+
+write.table(facs_endo_kidney_all, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_kidney_all", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+```
+
+
+## Liver
+```{r}
+
+
+facs_endo_liver_aorta = makeAnalysis(facsLiverEndo, facsAortaEndo)
+
+write.table(facs_endo_liver_aorta, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_liver_aorta", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+facs_endo_liver_lung = makeAnalysis(facsLiverEndo, facsLungEndo)
+
+write.table(facs_endo_liver_lung, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_liver_lung", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
+facs_endo_liver_kidney = makeAnalysis(facsLiverEndo, facsKidneyEndo)
+
+write.table(facs_endo_liver_kidney, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_liver_kidney", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
+facs_endo_liver_brain = makeAnalysis(facsLiverEndo, facsBrainEndo)
+
+write.table(facs_endo_liver_brain, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_liver_brain", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
+facs_endo_liver_all = makeAnalysis(facsLiverEndo, c(facsAortaEndo, facsLungEndo, facsKidneyEndo, facsBrainEndo))
+
+write.table(facs_endo_liver_all, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_liver_all", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+```
+
+
+## Brain
+```{r}
+
+
+facs_endo_brain_aorta = makeAnalysis(facsBrainEndo, facsAortaEndo)
+
+write.table(facs_endo_brain_aorta, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_brain_aorta", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+facs_endo_brain_lung = makeAnalysis(facsBrainEndo, facsLungEndo)
+
+write.table(facs_endo_brain_lung, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_brain_lung", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
+facs_endo_brain_kidney = makeAnalysis(facsBrainEndo, facsKidneyEndo)
+
+write.table(facs_endo_brain_kidney, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_brain_kidney", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
+facs_endo_brain_liver = makeAnalysis(facsBrainEndo, facsLiverEndo)
+
+write.table(facs_endo_brain_liver, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_brain_liver", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
+facs_endo_brain_all = makeAnalysis(facsBrainEndo, c(facsAortaEndo, facsLungEndo, facsKidneyEndo, facsLiverEndo))
+
+write.table(facs_endo_brain_all, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_brain_all", ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+```
+
+
 
 
 ## Aorta vs Lung

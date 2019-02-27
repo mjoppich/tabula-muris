@@ -235,6 +235,9 @@ makeAnalysis <- function( tissues1, tissues2)
       return(NULL)
     }
   
+    print(tissues1)
+    print(tissues2)
+  
     newMarkers = FindMarkers(dropletTiss, ident.1=tissues1, ident.2=tissues2,only.pos=TRUE, test.use="MAST")
     return(newMarkers)
 }
@@ -246,76 +249,97 @@ Now we can run the analysis against each other ...
 
 # Analysis: Endothelial Cells against each other
 
-
-## Aorta vs Lung
+## Lung
 
 ```{r}
 
-aorta_lung_markers_droplet = makeAnalysis(dropletAortaEndo, dropletLungEndo)
+endo_lung_kidney = makeAnalysis(dropletLungEndo, dropletKidneyEndo)
 
-write.table(aorta_lung_markers_droplet, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("aorta_lung_markers_droplet",".tsv", sep="")) ,quote=FALSE, sep='\t')
+write.table(endo_lung_kidney, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("endo_lung_kidney",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+endo_lung_bladder = makeAnalysis(dropletLungEndo, dropletBladderEndo)
+
+write.table(endo_lung_bladder, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("endo_lung_bladder",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+endo_lung_liver = makeAnalysis(dropletLungEndo, dropletLiverEndo)
+
+write.table(endo_lung_liver, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("endo_lung_liver",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+endo_lung_all = makeAnalysis(dropletLungEndo, c(dropletKidneyEndo, dropletBladderEndo, dropletLiverEndo))
+
+write.table(endo_lung_all, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("endo_lung_all",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
 ```
 
-## Aorta vs Kidney
+## Kidney
+
 ```{r}
 
-aorta_kidney_markers_droplet = makeAnalysis(dropletAortaEndo, dropletKidneyEndo)
+endo_kidney_lung = makeAnalysis(dropletKidneyEndo, dropletLungEndo)
 
-write.table(aorta_kidney_markers_droplet, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("aorta_kidney_markers_droplet",".tsv", sep="")) ,quote=FALSE, sep='\t')
+write.table(endo_kidney_lung, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("endo_kidney_lung",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+endo_kidney_bladder = makeAnalysis(dropletKidneyEndo, dropletBladderEndo)
+
+write.table(endo_kidney_bladder, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("endo_kidney_bladder",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+endo_kidney_liver = makeAnalysis(dropletKidneyEndo, dropletLiverEndo)
+
+write.table(endo_kidney_liver, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("endo_kidney_liver",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+endo_kidney_all = makeAnalysis(dropletKidneyEndo, c(dropletLungEndo, dropletBladderEndo, dropletLiverEndo))
+
+write.table(endo_kidney_all, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("endo_kidney_all",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
 ```
 
-## Aorta vs Bladder
+## Bladder
 
 ```{r}
 
-aorta_bladder_markers_droplet = makeAnalysis(dropletAortaEndo, dropletBladderEndo)
+endo_bladder_lung = makeAnalysis(dropletBladderEndo, dropletLungEndo)
 
-write.table(aorta_bladder_markers_droplet, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("aorta_bladder_markers_droplet",".tsv", sep="")) ,quote=FALSE, sep='\t')
-```
+write.table(endo_bladder_lung, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("endo_bladder_lung",".tsv", sep="")) ,quote=FALSE, sep='\t')
 
-## Aorta vs Liver
+endo_bladder_kidney = makeAnalysis(dropletBladderEndo, dropletKidneyEndo)
 
-```{r}
+write.table(endo_bladder_kidney, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("endo_bladder_kidney",".tsv", sep="")) ,quote=FALSE, sep='\t')
 
-aorta_liver_markers_droplet = makeAnalysis(dropletAortaEndo, dropletLiverEndo)
+endo_bladder_liver = makeAnalysis(dropletBladderEndo, dropletLiverEndo)
 
-write.table(aorta_liver_markers_droplet, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("aorta_liver_markers_droplet",".tsv", sep="")) ,quote=FALSE, sep='\t')
-```
+write.table(endo_bladder_liver, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("endo_bladder_liver",".tsv", sep="")) ,quote=FALSE, sep='\t')
 
-## Lung vs Kidney
+endo_bladder_all = makeAnalysis(dropletBladderEndo, c(dropletLungEndo, dropletKidneyEndo, dropletLiverEndo))
 
-```{r}
+write.table(endo_bladder_all, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("endo_bladder_all",".tsv", sep="")) ,quote=FALSE, sep='\t')
 
-lung_kidney_markers_droplet = makeAnalysis(dropletLungEndo, dropletKidneyEndo)
 
-write.table(lung_kidney_markers_droplet, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("lung_kidney_markers_droplet",".tsv", sep="")) ,quote=FALSE, sep='\t')
-```
-
-## Lung vs Bladder
-
-```{r}
-
-lung_bladder_markers_droplet = makeAnalysis(dropletLungEndo, dropletBladderEndo)
-
-write.table(lung_bladder_markers_droplet, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("lung_bladder_markers_droplet",".tsv", sep="")) ,quote=FALSE, sep='\t')
-```
-
-## Lung vs Liver
-
-```{r}
-
-lung_liver_markers_droplet = makeAnalysis(dropletLungEndo, dropletLiverEndo)
-
-write.table(lung_liver_markers_droplet, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("lung_liver_markers_droplet",".tsv", sep="")) ,quote=FALSE, sep='\t')
 ```
 
 
-## Kidney vs Bladder
+## Liver
+
 ```{r}
 
-kidney_bladder_markers_droplet = makeAnalysis(dropletKidneyEndo, dropletBladderEndo)
+endo_liver_lung = makeAnalysis(dropletLiverEndo, dropletLungEndo)
 
-write.table(kidney_bladder_markers_droplet, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("kidney_bladder_markers_droplet",".tsv", sep="")) ,quote=FALSE, sep='\t')
+write.table(endo_liver_lung, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("endo_liver_lung",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+endo_liver_kidney = makeAnalysis(dropletLiverEndo, dropletKidneyEndo)
+
+write.table(endo_liver_kidney, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("endo_liver_kidney",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+endo_liver_bladder = makeAnalysis(dropletLiverEndo, dropletBladderEndo)
+
+write.table(endo_liver_bladder, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("endo_liver_bladder",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+endo_liver_all = makeAnalysis(dropletLiverEndo, c(dropletLungEndo, dropletKidneyEndo, dropletBladderEndo))
+
+write.table(endo_liver_all, file = here("00_data_ingest", "sanne_analysis", "droplet_analysis", paste("endo_liver_all",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
 ```
 
 ## Kidney vs Liver
@@ -494,7 +518,7 @@ makeNewAnalysis = function(targetCells, sourceCells, tissueName, prefix) {
 
 ```{r, fig.width=10, fig.height=6}
 
-VlnPlot(object = dropletTiss, features = c("Cldn5", "Tmem100"), ncol=4, idents=unique(c(dropletLungEndo, dropletLungCir)), slot = 'counts', log = TRUE, same.y.lims =FALSE)
+VlnPlot(object = facsTiss, features = c("Calcrl", "Tmem100"), ncol=4, idents=unique(c(dropletLungEndo, dropletLungCir)), slot = 'counts', log = TRUE, same.y.lims =FALSE)
 
 ```
 

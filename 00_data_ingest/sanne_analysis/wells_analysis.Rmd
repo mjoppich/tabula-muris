@@ -170,11 +170,27 @@ print(wellsAllLiver)
 
 ```
 
-Define the analysis
+#Define the analysis
 ```{r}
 
 makeAnalysis <- function( tissues1, tissues2)
 {
+  
+    if (is.null(tissues1)|| is.null(tissues2))
+    {
+      print("makeAnalysis failed due to null tissue")
+      return(NULL)
+    }
+  
+    if (length(tissues1) == 0 || length(tissues2) == 0)
+    {
+      print("makeAnalysis failed due to 0 length tissue")
+      return(NULL)
+    }
+  
+    print(tissues1)
+    print(tissues2)
+  
     newMarkers = FindMarkers(mca, ident.1=tissues1, ident.2=tissues2,only.pos=TRUE, test.use="MAST")
     return(newMarkers)
 }
@@ -198,6 +214,108 @@ setCellIdent <- function (object, idp1)
 mca <- setCellIdent(object = mca, "Annotation")
 
 ```
+
+
+
+## Lung
+
+```{r}
+
+wells_endo_lung_kidney = makeAnalysis(wellsLungEndo, wellsKidneyEndo)
+
+write.table(wells_endo_lung_kidney, file = here("00_data_ingest", "sanne_analysis", "wells_analysis", paste("wells_endo_lung_kidney",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+wells_endo_lung_bladder = makeAnalysis(wellsLungEndo, wellsBladderEndo)
+
+write.table(wells_endo_lung_bladder, file = here("00_data_ingest", "sanne_analysis", "wells_analysis", paste("wells_endo_lung_bladder",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+wells_endo_lung_liver = makeAnalysis(wellsLungEndo, wellsLiverEndo)
+
+write.table(wells_endo_lung_liver, file = here("00_data_ingest", "sanne_analysis", "wells_analysis", paste("wells_endo_lung_liver",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+wells_endo_lung_all = makeAnalysis(wellsLungEndo, c(wellsKidneyEndo, wellsBladderEndo, wellsLiverEndo))
+
+write.table(wells_endo_lung_all, file = here("00_data_ingest", "sanne_analysis", "wells_analysis", paste("wells_endo_lung_all",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
+```
+
+## Kidney
+
+```{r}
+
+wells_endo_kidney_lung = makeAnalysis(wellsKidneyEndo, wellsLungEndo)
+
+write.table(wells_endo_kidney_lung, file = here("00_data_ingest", "sanne_analysis", "wells_analysis", paste("wells_endo_kidney_lung",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+wells_endo_kidney_bladder = makeAnalysis(wellsKidneyEndo, wellsBladderEndo)
+
+write.table(wells_endo_kidney_bladder, file = here("00_data_ingest", "sanne_analysis", "wells_analysis", paste("wells_endo_kidney_bladder",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+wells_endo_kidney_liver = makeAnalysis(wellsKidneyEndo, wellsLiverEndo)
+
+write.table(wells_endo_kidney_liver, file = here("00_data_ingest", "sanne_analysis", "wells_analysis", paste("wells_endo_kidney_liver",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+wells_endo_kidney_all = makeAnalysis(wellsKidneyEndo, c(wellsLungEndo, wellsBladderEndo, wellsLiverEndo))
+
+write.table(wells_endo_kidney_all, file = here("00_data_ingest", "sanne_analysis", "wells_analysis", paste("wells_endo_kidney_all",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
+```
+
+
+
+## Bladder
+
+```{r}
+
+wells_endo_bladder_lung = makeAnalysis(wellsBladderEndo, wellsLungEndo)
+
+write.table(wells_endo_bladder_lung, file = here("00_data_ingest", "sanne_analysis", "wells_analysis", paste("wells_endo_bladder_lung",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+wells_endo_bladder_kidney = makeAnalysis(wellsBladderEndo, wellsKidneyEndo)
+
+write.table(wells_endo_bladder_kidney, file = here("00_data_ingest", "sanne_analysis", "wells_analysis", paste("wells_endo_bladder_kidney",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+wells_endo_bladder_liver = makeAnalysis(wellsBladderEndo, wellsLiverEndo)
+
+write.table(wells_endo_bladder_liver, file = here("00_data_ingest", "sanne_analysis", "wells_analysis", paste("wells_endo_bladder_liver",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+wells_endo_bladder_all = makeAnalysis(wellsBladderEndo, c(wellsLungEndo, wellsKidneyEndo, wellsLiverEndo))
+
+write.table(wells_endo_bladder_all, file = here("00_data_ingest", "sanne_analysis", "wells_analysis", paste("wells_endo_bladder_all",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
+```
+
+
+## Liver
+
+```{r}
+
+wells_endo_liver_lung = makeAnalysis(wellsLiverEndo, wellsLungEndo)
+
+write.table(wells_endo_liver_lung, file = here("00_data_ingest", "sanne_analysis", "wells_analysis", paste("wells_endo_liver_lung",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+wells_endo_liver_kidney = makeAnalysis(wellsLiverEndo, wellsKidneyEndo)
+
+write.table(wells_endo_liver_kidney, file = here("00_data_ingest", "sanne_analysis", "wells_analysis", paste("wells_endo_liver_kidney",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+wells_endo_liver_bladder = makeAnalysis(wellsLiverEndo, wellsBladderEndo)
+
+write.table(wells_endo_liver_bladder, file = here("00_data_ingest", "sanne_analysis", "wells_analysis", paste("wells_endo_liver_bladder",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+wells_endo_liver_all = makeAnalysis(wellsLiverEndo, c(wellsLungEndo, wellsKidneyEndo, wellsBladderEndo))
+
+write.table(wells_endo_liver_all, file = here("00_data_ingest", "sanne_analysis", "wells_analysis", paste("wells_endo_liver_all",".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+
+```
+
+
+
+
+
 
 Now we can run the analysis against each other ...
 

@@ -2,6 +2,14 @@
 mkdir -p droplet_analysis_excl_overview
 
 
+python3 prepareExclusiveAnalysis.py --output droplet_analysis_excl_overview/cirepi_excl_tissue_kidney.html --name "Kidney CirEpiEndo" --tm gene_location.combined.pmid --diffreg droplet_analysis_excl/endo_cirepi_excl_kidney* droplet_analysis_excl/endo_excl_kidney*
+python3 prepareExclusiveAnalysis.py --output droplet_analysis_excl_overview/cirepi_excl_tissue_lung.html --name "Lung CirEpiEndo" --tm gene_location.combined.pmid --diffreg droplet_analysis_excl/endo_cirepi_excl_lung* droplet_analysis_excl/endo_excl_lung*
+python3 prepareExclusiveAnalysis.py --output droplet_analysis_excl_overview/cirepi_excl_tissue_aorta.html --name "Aorta CirEpiEndo" --tm gene_location.combined.pmid --diffreg droplet_analysis_excl/endo_cirepi_excl_aorta* droplet_analysis_excl/endo_excl_aorta*
+python3 prepareExclusiveAnalysis.py --output droplet_analysis_excl_overview/cirepi_excl_tissue_bladder.html --name "Bladder CirEpiEndo" --tm gene_location.combined.pmid --diffreg droplet_analysis_excl/endo_cirepi_excl_bladder* droplet_analysis_excl/endo_excl_bladder*
+python3 prepareExclusiveAnalysis.py --output droplet_analysis_excl_overview/cirepi_excl_tissue_liver.html --name "Liver CirEpiEndo" --tm gene_location.combined.pmid --diffreg droplet_analysis_excl/endo_cirepi_excl_liver* droplet_analysis_excl/endo_excl_liver*
+
+exit()
+
 python3 prepareExclusiveAnalysis.py --output droplet_analysis_excl_overview/excl_tissue_kidney.html --name "Kidney" --tm gene_location.combined.pmid --diffreg droplet_analysis_excl/excl_kidney*
 python3 prepareExclusiveAnalysis.py --output droplet_analysis_excl_overview/excl_tissue_lung.html --name "Lung" --tm gene_location.combined.pmid --diffreg droplet_analysis_excl/excl_lung*
 python3 prepareExclusiveAnalysis.py --output droplet_analysis_excl_overview/excl_tissue_aorta.html --name "Aorta" --tm gene_location.combined.pmid --diffreg droplet_analysis_excl/excl_aorta*

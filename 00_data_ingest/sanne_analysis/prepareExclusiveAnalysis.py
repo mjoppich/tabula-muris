@@ -539,6 +539,10 @@ if __name__ == '__main__':
     targetPSet =  sorted([x for x in powerset(allTargets)], key=lambda x: len(x), reverse=True)
     sourcePSet =  sorted([x for x in powerset(allSources)], key=lambda x: len(x), reverse=True)
 
+
+    targetPSet = [tuple(sorted(x, key=lambda x: (x[1], x[0]))) for x in targetPSet]
+    sourcePSet = [tuple(sorted(x, key=lambda x: (x[1], x[0]))) for x in sourcePSet]
+
     plannedComparisons = []
     performedComparisons = {}
 
@@ -560,7 +564,6 @@ if __name__ == '__main__':
                 continue
 
             print(tlist, slist)
-
 
             tliststr = ["-".join(x) for x in tlist]
             sliststr = ["-".join(x) for x in slist]
@@ -737,8 +740,11 @@ if __name__ == '__main__':
                 (head, body) = outDF._makeHTMLString("diffdf" + str(dfcount))
                 
                 testname = os.path.splitext(args.output.name)[0] + "___" + "_".join(tliststr) + "_vs_" + "_".join(sliststr) + ".intersect"
-                                
+
+                print("Exporting tsv") 
                 outDF.export(testname + ".tsv", ExportTYPE.TSV)
+
+                print("Exporting xlsx") 
                 outDF.export(testname + ".xlsx", ExportTYPE.XLSX)
                 
                 comparisonOutput.write("<h4>Additional Files</h4><ol>")
