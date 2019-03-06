@@ -1,0 +1,333 @@
+﻿Droplet cell lines:
+Heart_and_Aorta.endothelial cell END
+177
+Heart_and_Aorta.fibroblast
+226
+Heart_and_Aorta.NA
+98
+Heart_and_Aorta.endocardial cell
+63
+Heart_and_Aorta.cardiac muscle cell
+60
+Lung.myeloid cell CIR
+87
+Lung.alveolar macrophage
+345
+Lung.B cell CIR
+204
+Lung.natural killer cell CIR
+824
+Lung.T cell CIR
+247
+Lung.lung endothelial cell END
+462
+Lung.stromal cell
+2540
+Lung.non-classical monocyte CIR
+220
+Lung.leukocyte CIR
+152
+Lung.classical monocyte CIR
+161
+Lung.ciliated columnar cell of tracheobronchial tree
+49
+Lung.type II pneumocyte
+89
+Lung.NA
+45
+Lung.mast cell
+24
+Kidney.leukocyte CIR
+42
+Kidney.kidney capillary endothelial cell END
+392
+Kidney.mesangial cell
+51
+Kidney.kidney cell
+45
+Kidney.kidney collecting duct epithelial cell
+443
+Kidney.kidney proximal straight tubule epithelial cell
+1198
+Kidney.kidney loop of Henle ascending limb epithelial cell
+471
+Kidney.macrophage
+139
+Bladder.bladder cell
+1203
+Bladder.bladder urothelial cell
+1167
+Bladder.leukocyte CIR
+73
+Bladder.endothelial cell END
+57
+Liver.hepatocyte
+1764
+Liver.leukocyte CIR
+26
+Liver.duct epithelial cell EPI
+27
+Liver.endothelial cell of hepatic sinusoid END
+28
+For FACS:
+Aorta.fibroblast
+70
+Aorta.professional antigen presenting cell
+59
+Aorta.endothelial cell END
+188
+Aorta.erythrocyte CIR
+91
+Lung.stromal cell
+423
+Lung.lung endothelial cell END
+693
+Lung.myeloid cell CIR
+85
+Lung.NA
+40
+Lung.monocyte CIR
+65
+Lung.classical monocyte CIR
+90
+Lung.B cell CIR
+57
+Lung.T cell CIR
+53
+Lung.natural killer cell CIR
+37
+Lung.epithelial cell of lung EPI
+113
+Lung.ciliated columnar cell of tracheobronchial tree
+25
+Lung.leukocyte CIR
+35
+Large_Intestine.epithelial cell of large intestine EPI
+2019
+Large_Intestine.large intestine goblet cell
+833
+Large_Intestine.Brush cell of epithelium proper of large intestine
+63
+Large_Intestine.enterocyte of epithelium of large intestine
+964
+Large_Intestine.enteroendocrine cell
+59
+Kidney.macrophage
+37
+Kidney.endothelial cell END
+126
+Kidney.kidney collecting duct epithelial cell
+121
+Kidney.epithelial cell of proximal tubule
+219
+Kidney.leukocyte CIR
+16
+Bladder.bladder cell
+695
+Bladder.bladder urothelial cell
+683
+Liver.natural killer cell CIR
+39
+Liver.hepatocyte
+391
+Liver.endothelial cell of hepatic sinusoid END
+182
+Liver.Kupffer cell
+61
+Liver.B cell CIR
+                                                                41
+
+
+Brain non-myeloid cells:
+Astrocyte of the cerebral cortex
+Bermann glial cells
+Brain pericytes
+Endothelial cells END
+Neuron
+Oligodendrocyte
+Oligodendrocyte precursor cell
+
+
+And finally here we go with microwell seq:
+
+Left ventricle cardiomyocyte_Myl2 high(Neonatal-Heart)
+Stromal cell_Col3a1 high(Neonatal-Heart)
+Vascular endothelial cell(Neonatal-Heart) END
+Neutrophil_Ngp high(Neonatal-Heart) CIR
+Epithelial cell(Neonatal-Heart) EPI
+Endothelial cell_Igfbp5 high(Neonatal-Heart) END
+Atrial cardiomyocyte(Neonatal-Heart)
+Smooth muscle cell(Neonatal-Heart)
+Dendritic cell(Neonatal-Heart)
+Dividing cell(Neonatal-Heart)
+Endothelial cell_Eln high(Neonatal-Heart) END
+Endothelial cell_Enpp2 high(Neonatal-Heart) END
+Stromal cell_Fmod high(Neonatal-Heart)
+Cardiac muscle cell(Neonatal-Heart)
+Macrophage(Neonatal-Heart)
+Neutrophil_Retnlg high(Neonatal-Heart) CIR
+Atrial cardiomyocyte_Acta2 high(Neonatal-Heart)
+Ventricle cardiomyocyte_Kcnj8 high(Neonatal-Heart)
+Erythroblast_Hba-x high(Fetal_Lung)
+Stromal cell_Ankfy1 high(Fetal_Lung)
+Erythroblast_Hbb-bs high(Fetal_Lung)
+Stromal cell_Ptn high(Fetal_Lung)
+Erythroblast_Mt2 high(Fetal_Lung)
+Neutrophil_S100a8 high(Fetal_Lung) 
+Erythroblast_Mt2&Mt1 high(Fetal_Lung)
+Macrophage_Pf4high(Fetal_Lung)
+Epithelial cell_Sftpc high(Fetal_Lung)
+Epithelial cell_Aldh1a2_high(Fetal_Lung)
+Smooth muscle cell(Fetal_Lung)
+Macrophage_Lyz2 high(Fetal_Lung)
+Neutrophil_Gm5483 high(Fetal_Lung)
+Ciliated cell(Lung)
+Clara Cell(Lung) 
+AT2 Cell(Lung)
+Alveolar macrophage_Ear2 high(Lung)
+Ig−producing B cell(Lung) CIR
+Monocyte progenitor cell(Lung) CIR
+B Cell(Lung) CIR
+AT1 Cell(Lung)
+Stromal cell_Inmt high(Lung)
+Endothelial cell_Kdr high(Lung) END
+Interstitial macrophage(Lung)
+NK Cell(Lung) CIR
+Plasmacytoid dendritic cell(Lung)
+Dividing T cells(Lung) CIR
+Endothelial cell_Tmem100 high(Lung) END
+Stromal cell_Dcn high(Lung)
+Dividing dendritic cells(Lung)
+Dividing cells(Lung)
+Dendritic cell_Naaa high(Lung)
+Nuocyte(Lung)
+Conventional dendritic cell_Tubb5 high(Lung)
+Eosinophil granulocyte(Lung) CIR
+Endothelial cells_Vwf high(Lung) END
+Conventional dendritic cell_Mgl2 high(Lung)
+Conventional dendritic cell_H2-M2 high(Lung)
+Alveolar macrophage_Pclaf high(Lung)
+Neutrophil granulocyte(Lung) CIR
+T Cell_Cd8b1 high(Lung) CIR
+Basophil(Lung) CIR
+Stromal cell_Acta2 high(Lung)
+Conventional dendritic cell_Gngt2 high(Lung)
+Alveolar bipotent progenitor(Lung)
+Erythroblast_Hbb-bs high(Fetal_Intestine)
+Epithelial cell_Lgals2 high(Fetal_Intestine)
+Erythroblast_Hbb-y high(Fetal_Intestine)
+Erythroblast_Car2 high(Fetal_Intestine)
+Acinar cell(Fetal_Intestine)
+Enterocyte progenitor_late_Ube2c high(Fetal_Intestine)
+Epithelial cell_Bex1 high(Fetal_Intestine)
+Macrophage_Lyz2 high(Fetal_Intestine)
+Macrophage_Pf4 high(Fetal_Intestine)
+Stromal cell_Upk3b high(Fetal_Intestine)
+Neuronal Cells_Rtn1 high(Fetal_Intestine)
+Stromal cell_Adamdec1 high(Fetal_Intestine)
+Enteroendocrine(Fetal_Intestine)
+Enterocyte progenitor(Fetal_Intestine)
+T cell(Fetal_Intestine) CIR
+Neuronal cell_Fabp7 high(Fetal_Intestine)
+Enteric muscle cell(Fetal_Intestine)
+Enterocyte progenitor_late_Ccnb1 high(Fetal_Intestine)
+Stromal cell_Stmn2 high (Fetal_Intestine)
+Endothelial cell(Fetal_Intestine)
+Paneth cell(Small-Intestine)
+B cell_Igkv12-46 high(Small-Intestine) CIR
+B cell_Ms4a1 high(Small-Intestine) CIR
+Epithelium of small intestinal villi_Fabp1 high(Small-Intestine)
+Columnar epithelium(Small-Intestine) EPI
+T cell_Icos high(Small-Intestine) CIR
+Epithelium of small intestinal villi_Fabp6 high(Small-Intestine)
+B cell_Jchain high(Small-Intestine) CIR
+T cell_Cd7 high(Small-Intestine) CIR
+S cell_Gip high(Small-Intestine)
+Mast cell(Small-Intestine)
+S cell_Chgb high(Small-Intestine)
+Epithelial cell_Kcne3 high(Small-Intestine) EPI
+Stromal cell_Dcn high(Small-Intestine)
+Epithelial cell_Sh2d6 high(Small-Intestine) EPI
+Stromal cell_Adamdec1 high(Small-Intestine)
+T cell_Ccl5 high(Small-Intestine) CIR
+Macrophage_G0s2 high(Small-Intestine)
+Epithelium of small intestinal villi_S100g high(Small-Intestine)
+T cell_Ms4a4b high(Small-Intestine) CIR
+B cell_Ighd high(Small-Intestine) CIR
+Epithelium of small intestinal villi_Gm23935 high(Small-Intestine)
+Dendrtic cell_Cst3 high(Small-Intestine)
+Dendritic cell_Siglech high(Small-Intestine)
+Macrophage_Cxcl2 high(Small-Intestine)
+Erythroblast(Small-Intestine) CIR
+Macrophage_Apoe high(Small-Intestine)
+Epithelium of small intestinal villi_mt-Nd1 high(Small-Intestine)
+Metanephric mesenchyme(Fetal_Kidney)
+Cell in cell cycle(Fetal_Kidney)
+Proximal tubule brush border cell(Kidney) 
+S3 proximal tubule cells(Kidney) 
+S1 proximal tubule cells(Kidney)
+Macrophage_Lyz2 high(Kidney)
+Proximal tubule cell_Osgin1 high(Kidney)
+Distal convoluted tubule_Pvalb high(Kidney)
+Macrophage_Ccl4 high (Kidney)
+Thick ascending limb of the loop of Henle(Kidney)
+Proximal tubule cell_Cyp4a14 high(Kidney) 
+Intercalated cells of collecting duct_Slc26a4 high(Kidney) 
+Ureteric epithelium(Kidney)
+Endothelial cell(Kidney) END
+Distal convoluted tubule_S100g high(Kidney)
+Intercalated cells of collecting duct_Aqp6 high(Kidney)
+B cell(Kidney) CIR
+Stromal cell_Dcn high(Kidney)
+Epithelial cell_Cryab high(Kidney) EPI
+Distal collecting duct principal cell_Hsd11b2 high(Kidney)
+Fenestrated endothelial cell_Plvap high(Kidney) END
+Stromal cell_Ptgds high(Kidney)
+Dendritic cell_Ccr7 high(Kidney)
+Distal collecting duct principal cell_Cldn4 high(Kidney)
+Dendritic cell_Cst3 high(Kidney)
+T cell(Kidney) CIR
+Stromal cell_Mgp high(Kidney)
+Stromal cell_Cxcl10 high(Kidney)
+Adipocyte(Fetal_Kidney)
+Fenestrated endothelial cell_Tm4sf1 high(Kidney) END
+Stromal cell_Mgp high(Fetal_Kidney)
+Stromal cell_Ankrd1 high(Kidney)
+Neutrophil progenitor_S100a8 high(Kidney) CIR
+Glomerular epithelial cell_Aldh1a2 high(Fetal_Kidney)
+Umbrella cell(Bladder)
+Urothelium(Bladder)
+Stromal cell_Dpt high(Bladder)
+Dendritic cell_Cd74 high(Bladder)
+Basal epithelial cell(Bladder) EPI
+Stromal cell_Car3 high(Bladder)
+Mesenchymal stromal cell(Bladder)
+Smooth muscle cell(Bladder)
+Vascular endothelial cell(Bladder) END
+Dendritic cell_Lyz2 high(Bladder)
+Epithelial cell_Upk3a high(Bladder) EPI
+Macrophage_Pf4 high(Bladder)
+Endothelial cell_Ly6c1 high(Bladder) END
+Epithelial cell_Gm23935 high(Bladder) EPI
+NK cell(Bladder) CIR
+Vascular smooth muscle progenitor cell(Bladder)
+B cell_Jchain high(Liver) CIR
+Periportal (PP) hepatocyte(Liver)
+Granulocyte(Liver) CIR
+Endothelial cell(Liver) END
+Kuppfer cell(Liver)
+Epithelial cell(Liver) EPI
+Pericentral (PC) hepatocytes(Liver)
+Macrophage_Chil3 high(Liver)
+Dendritic cell_Cst3 high(Liver)
+T cell_Trbc2 high(Liver) CIR
+Erythroblast_Hbb-bt high(Liver) CIR
+T cell_Gzma high(Liver) CIR
+Erythroblast_Hbb-bs high(Liver) CIR
+Dendritic cell_Siglech high(Liver)
+Stromal cell(Liver)
+B cell_Fcmr high(Liver) CIR
+Hepatocyte_Fabp1 high(Liver)
+Neutrophil_Ngp high(Liver) CIR
+Epithelia cell_Spp1 high(Liver) EPI
+Hepatocyte_mt-Nd4 high(Liver)

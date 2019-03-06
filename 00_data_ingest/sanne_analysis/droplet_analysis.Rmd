@@ -516,9 +516,9 @@ makeNewAnalysis = function(targetCells, sourceCells, tissueName, prefix) {
 ```
 
 
-```{r, fig.width=10, fig.height=6}
+```{r, fig.width=12, fig.height=20}
 
-VlnPlot(object = facsTiss, features = c("Calcrl", "Tmem100"), ncol=4, idents=unique(c(dropletLungEndo, dropletLungCir)), slot = 'counts', log = TRUE, same.y.lims =FALSE)
+VlnPlot(object = dropletTiss, features = c("Ehd3", "Emcn", "Fabp4", "Fxyd2", "Gpx3", "Igfbp5", "Kap", "Klk1", "Miox", "Pbx1", "Plat", "Plscr2", "Plvap", "Rsad2", "Thbd", "Tspan13"), ncol=4, idents=unique(c(dropletKidneyEndo,dropletBladderEndo, dropletLungEndo, dropletLiverEndo)), slot = 'counts', log = TRUE, same.y.lims =FALSE)
 
 ```
 
