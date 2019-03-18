@@ -435,6 +435,55 @@ def powerset(iterable):
     s = list(iterable)
     return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
 
+import upsetplot
+import pandas as pd
+import numpy as np
+
+def makeUpsetPlot(data, title, outfile):
+
+    def make_data(indata):
+
+        n_sets = len(indata)
+
+        unionElems = set()
+        for x in indata:
+            unionElems = unionElems.union(set(indata[x]))
+
+        unionElems = tuple(unionElems)
+        n_samples = len(unionElems)
+
+        setLabels = [x for x in indata]
+
+        df = pd.DataFrame({'value': np.zeros(n_samples)})
+        for i in range(len(setLabels)):
+
+            r = []
+            for x in unionElems:
+                if x in indata[setLabels[i]]:
+                    r.append(True)
+                else:
+                    r.append(False)
+
+            df[setLabels[i]] = r
+            df['value'] += r
+
+        df.set_index([setLabels[i] for i in range(n_sets)], inplace=True)
+
+        return df.value.groupby(level=list(range(n_sets))).count()
+
+
+
+    ndata = make_data(data)
+    upsetplot.plot( ndata , show_counts='%d')
+    plt.title(title)
+
+    if outfile != None:
+        plt.savefig(outfile)
+    else:
+        plt.show()
+
+
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Process some integers.')
@@ -624,6 +673,10 @@ if __name__ == '__main__':
             plannedComparisons.append((tlist, slist))
 
     savedComparisonOutput=[]
+    upsetData = {}
+    upsetDataUpDown = defaultdict(set)
+
+
     for tlist in targetPSet:
         for slist in sourcePSet:
 
@@ -667,6 +720,9 @@ if __name__ == '__main__':
 
             for method in compTissuesDE:
                 totalIntersect = totalIntersect.intersection(compType2DE[method])
+
+            if len(slist) == 1:
+                upsetData[(tuple(tliststr), tuple(sliststr))] = [x for x in totalIntersect]
 
 
             simpleIntersect = set([x for x in totalUnion])
@@ -755,6 +811,9 @@ if __name__ == '__main__':
 
                 dfDict["Direction"] = "#".join(sameDirection)
 
+                if len(sameDirection) > 1:
+                    upsetDataUpDown[(tuple(tliststr), tuple(sliststr))].add(geneID)
+
                 dr = DataRow.fromDict(dfDict)
                 updateDRs.append(dr)
             
@@ -769,7 +828,7 @@ if __name__ == '__main__':
             (head, body) = ("", "<h4>Not enough cell-types for comparison</h4>")
             outDF = None
 
-            if len(slist)+2 >= len(allSources):
+            if len(slist)+1 >= len(allSources) or len(slist) == 1:
 
                 print(len(totalIntersect))
                 vennDiagPath = ""
@@ -945,7 +1004,8 @@ if __name__ == '__main__':
                 comparisonOutput.write("<li><a href=\"{loc}\" target=\"_blank\">TSV File (no HTML)</a></li>".format(loc=os.path.basename(testname) + ".nohtml.tsv"))
                 comparisonOutput.write("<li><a href=\"{loc}\" target=\"_blank\">XLSX File (noHTML)</a></li>".format(loc=os.path.basename(testname) + ".nohtml.xlsx"))
                 comparisonOutput.write("</ol>")
-                comparisonOutput.write("<h5>Genes differential < {pval} in intersection but not in simple</h5>".format(pval=args.maxpval))
+                if len(slist) > 1:
+                    comparisonOutput.write("<h5>Genes differential < {pval} in intersection but not in simple</h5>".format(pval=args.maxpval))
                 comparisonOutput.write("<p>{genes}</p>".format(genes=", ".join(genesNotDiffInSimple)))
                 
             comparisonOutput.write("<h3>Intersection Overview</h3></br><h4>Intersection Genes: {geneCount}</h4>".format(geneCount=len(totalIntersect)))
@@ -991,10 +1051,43 @@ if __name__ == '__main__':
         args.output.write(str(compOut.getvalue()))
     
     args.output.write("<h3>Gene Union Overview</h3>")
+
+
+
+    args.output.write("Overlap of tissues")
+
+
+    niceUpsetData = {}
+
+    for x in upsetData:
+        print(x)
+        name="&".join(x[0]) + " vs. " + "&".join(x[1])
+
+        niceUpsetData[name] = upsetData[x]
+
+    makeUpsetPlot(niceUpsetData, "Tissue Overlap", unionOutBase + ".issue.upset.png")
+    args.output.write("<h4>Tissue Overlap</h4>")
+    args.output.write("<img src=\"{loc}\"/>".format(loc=os.path.basename(unionOutBase) + ".issue.upset.png"))
+
+    niceUpsetData = {}
+
+    for x in upsetData:
+        name="&".join(x[0]) + " vs. " + "&".join(x[1])
+
+        genes = upsetData[x]
+        genes = genes.difference(upsetDataUpDown[x])
+
+        niceUpsetData[name] = genes
+
+
+    makeUpsetPlot(niceUpsetData, "Tissue Overlap (no up/down)", unionOutBase + ".issue.upset.noupdown.png")
+    args.output.write("<h4>Tissue Overlap</h4>")
+    args.output.write("<img src=\"{loc}\"/>".format(loc=os.path.basename(unionOutBase) + ".issue.upset.noupdown.png"))
+
     args.output.write(bodyUnion)
 
-    args.output.write("<a href=\"{loc}\" target=\"_blank\">TSV File</a>".format(loc=unionOutBase + ".tsv"))
-    args.output.write("<a href=\"{loc}\" target=\"_blank\">XLSX File</a>".format(loc=unionOutBase + ".xlsx"))
+    args.output.write("<a href=\"{loc}\" target=\"_blank\">TSV File</a><br/>".format(loc=os.path.basename(unionOutBase) + ".tsv"))
+    args.output.write("<a href=\"{loc}\" target=\"_blank\">XLSX File</a><br/>".format(loc=os.path.basename(unionOutBase) + ".xlsx"))
 
     args.output.write("</body></html>")
 

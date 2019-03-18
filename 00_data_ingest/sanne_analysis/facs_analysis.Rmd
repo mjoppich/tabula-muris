@@ -26,6 +26,8 @@ source(here("00_data_ingest", "02_tissue_analysis_rmd", "boilerplate.R"))
 
 tissues_of_interest = c("Aorta", "Lung", "Large_Intestine", "Kidney", "Bladder", "Liver", "Brain_Non-Myeloid")
 
+tissues_of_interest = c("Fat", "Marrow", "Large_Intestine", "Heart", "Brain_Myeloid", "Brain_Non-Myeloid", "Mammary_Gland", "Skin", "Lung", "Pancreas", "Spleen", "Tongue", "Bladder", "Trachea", "Thymus", "Limb_Muscle", "Diaphragm", "Liver", "Aorta", "Kidney")
+
 processSeurat = function(facsTiss, scale){
   facsTiss <- NormalizeData(object = facsTiss, scale.factor = scale)
   facsTiss <- ScaleData(object = facsTiss)
@@ -88,7 +90,7 @@ facsTiss = merge(x=all_tissues[[1]], y=all_tissues[2:length(all_tissues)], add.c
 
 facsTiss <- processSeurat(facsTiss, 1e4)
 
-n.pcs = 20
+n.pcs = 50
 res.used <- 3
 
 facsTiss <- FindClusters(object = facsTiss, reduction.type = "pca", dims.use = 1:n.pcs, resolution = res.used, print.output = 0, save.SNN = TRUE)
@@ -187,6 +189,8 @@ facsKidneyCells = c(facsKidneyEndo,facsKidneyEpi, facsKidneyCir)
 facsBladderCells = c(facsBladderEndo,facsBladderEpi, facsBladderCir)
 facsLiverCells = c(facsLiverEndo, facsLiverEpi, facsLiverCir)
 facsBrainCells = c(facsBrainEndo, facsBrainEpi, facsBrainCir)
+
+#facsAllEndo = unique(grep(pattern="endothelial cell", x=Idents(facsTiss), value = TRUE))
 
 
 facsAllAorta = unique(grep(pattern="Aorta", x=Idents(facsTiss), value = TRUE))
