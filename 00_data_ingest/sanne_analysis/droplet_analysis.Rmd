@@ -24,7 +24,7 @@ library(here)
 library(Seurat)
 source(here("00_data_ingest", "02_tissue_analysis_rmd", "boilerplate.R"))
 
-tissues_of_interest = c("Heart_and_Aorta", "Lung", "Kidney", "Bladder", "Liver")
+tissues_of_interest = c("Bladder", "Heart_and_Aorta","Kidney", "Limb_Muscle", "Liver",  "Lung", "Mammary_Gland", "Marrow", "Spleen", "Thymus", "Tongue", "Trachea")
 
 processSeurat = function(dropletTiss, scale){
   dropletTiss <- NormalizeData(object = dropletTiss, scale.factor = scale)
@@ -53,9 +53,9 @@ Here we are now loading the seurat objects
 
 all_tissues = c()
 
-for (tissue_if_interest in tissues_of_interest){
+for (tissue_of_interest in tissues_of_interest){
   
-    filename = here('00_data_ingest', '04_tissue_robj_generated', paste0("droplet_", tissue_if_interest, "_seurat_tiss.Robj"))
+    filename = here('00_data_ingest', '04_tissue_robj_generated', paste0("droplet_", tissue_of_interest, "_seurat_tiss.Robj"))
     print(filename)
     load(file=filename)
     tissue_1 = UpdateSeuratObject(tiss)
@@ -82,18 +82,23 @@ for (tissue_obj in all_tissues){
 ```
 
 
-```{r}
+```{r,fig.width=30, fig.height=30}
 
 dropletTiss = merge(x=all_tissues[[1]], y=all_tissues[2:length(all_tissues)], add.cell.ids=tissues_of_interest)
 
 dropletTiss <- processSeurat(dropletTiss, 1e4)
 
-n.pcs = 20
+n.pcs = 100
 res.used <- 3
 
 dropletTiss <- FindClusters(object = dropletTiss, reduction.type = "pca", dims.use = 1:n.pcs, resolution = res.used, print.output = 0, save.SNN = TRUE)
 dropletTiss <- RunTSNE(object = dropletTiss, dims.use = 1:n.pcs, seed.use = 10, perplexity=30)
 
+dropletTiss <- RunTSNE(object = dropletTiss, reduction.use = "pca", dims.use = 1:75, tsne.method = "FIt-SNE", nthreads = 12, reduction.name = "tsne", reduction.key = "FItSNE_", fast_tsne_path = "/home/sanne/progs/FIt-SNE/bin/fast_tsne", max_iter = 2000)
+
+DimPlot(object = dropletTiss, reduction = "tsne", group.by='cell_ontology_class')
+
+options(bitmapType='cairo')
 DimPlot(object = dropletTiss, reduction = "tsne", group.by='cell_ontology_class')
 
 all_tissues = NULL;
@@ -196,6 +201,16 @@ dropletAllBladder = setdiff(dropletAllBladder, dropletBladderCells)
 dropletAllLiver = unique(grep(pattern="Liver", x=Idents(dropletTiss), value = TRUE))
 dropletAllLiver = setdiff(dropletAllLiver, dropletLiverCells)
 
+
+dropletTissuesEndo = c(dropletAortaEndo, dropletLungEndo, dropletKidneyEndo, dropletBladderEndo, dropletLiverEndo)
+
+dropletTotalEndo = unique(grep(pattern="endothelial cell", x=Idents(dropletTiss), value = TRUE))
+dropletAllEndo = setdiff(dropletTotalEndo, dropletTissuesEndo)
+
+cirNames = c("monocyte", "erythrocyte", "leukocyte", "T cell", "B cell", "natural killer cell")
+cirNameGrep = paste("(",paste(cirNames, collapse="|") , ")", sep="")
+dropletCirTotal = unique(grep(pattern=cirNameGrep, x=Idents(dropletTiss), value = TRUE))
+
 ```
 
 ```{r}
@@ -215,6 +230,69 @@ print(dropletAllLiver)
 
 
 ```
+
+```{r}
+
+
+for (cellType in c(dropletTotalEndo, cirTotal))
+{
+  print(cellType)
+  expTable = GetAssayData(object = subset(x=dropletTiss, idents=c(cellType)), slot = "scale.data")
+  
+  outvalues = t(apply(expTable, 1, function(x) {
+      b=x[x > 0];
+      a=x;
+      out = {}
+      
+      out["anum"] = length(x)
+      out["num"] = length(b)
+      
+      f = fivenum(a)
+      out["min"] = f[1]
+      out["lower_hinge"] = f[2]
+      out["median"] = f[3]
+      out["upper_hinge"] = f[4]
+      out["max"] = f[5]
+      
+      out
+    }))
+  
+  outvalues = cbind(rownames(outvalues), outvalues)
+  cnames = colnames(outvalues)
+  cnames[1] = "gene"
+  
+  colnames(outvalues) = cnames
+  
+  write.table(outvalues, file=here("00_data_ingest", "sanne_analysis", "droplet_expression_all", paste(cellType, ".counts", sep="")), row.names = F,  quote=FALSE, sep='\t')
+  
+    outvalues = t(apply(expTable, 1, function(x) {
+      a=x[x > 0];
+      out = {}
+      
+      out["anum"] = length(x)
+      out["num"] = length(a)
+      
+      f = fivenum(a)
+      out["min"] = f[1]
+      out["lower_hinge"] = f[2]
+      out["median"] = f[3]
+      out["upper_hinge"] = f[4]
+      out["max"] = f[5]
+      
+      out
+    }))
+  
+  outvalues = cbind(rownames(outvalues), outvalues)
+  cnames = colnames(outvalues)
+  cnames[1] = "gene"
+  
+  colnames(outvalues) = cnames
+  
+  write.table(outvalues, file=here("00_data_ingest", "sanne_analysis", "droplet_expression", paste(cellType, ".counts", sep="")), row.names = F,  quote=FALSE, sep='\t')
+}
+
+```
+
 
 We should prepare our functions again ....
 
