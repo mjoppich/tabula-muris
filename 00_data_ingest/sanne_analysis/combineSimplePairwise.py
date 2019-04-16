@@ -17,6 +17,209 @@ from collections import defaultdict
 import re
 import io
 from natsort import natsorted
+import glob
+
+class ExpressionDB:
+
+    def __init__(self):
+        self.org2type2expr = defaultdict(lambda: defaultdict(lambda: dict()))
+
+    def forGene(self, org, ctype, gname):
+
+        lorg = org.lower()
+        lctype = ctype.replace(" ", "_").lower()
+
+        allFound = set()
+
+        nRet = self.org2type2expr[lorg][lctype].get(gname, None)
+
+        if nRet != None:
+            return nRet
+
+        nRet = self.org2type2expr[lorg][lctype].get(gname.upper(), None)
+        if nRet != None:
+            return nRet
+
+        return None
+
+    def makePlot(self, outName, gname, tissTypes):
+
+        plotData = []
+        plotLabels = []
+
+        for ttname in tissTypes:
+
+            if '.' in ttname:
+                (tiss, ctype) = ttname.split(".")[0:2]
+
+            else:
+
+                mo = re.search("(.+)\\((.+)\\)", ttname, flags=0)
+                (ctype, tiss) = (mo.group(1), mo.group(2))
+
+                #print(ttname, tiss, ctype)
+
+
+            elemData = self.forGene(tiss, ctype, gname)
+
+            if elemData == None:
+                continue
+
+            ( cellWithGene, cellWithExpr, minValue, lower_hinge, medValue, upper_hinge, maxValue ) = elemData
+
+            #print(ttname, elemData)
+
+            item = {}
+            item["label"] = 'box' # not required
+            item["med"] = medValue
+            item["q1"] = lower_hinge
+            item["q3"] = upper_hinge
+            item["whislo"] = minValue # required
+            item["whishi"] = maxValue # required
+            item["fliers"] = [] # required if showfliers=True
+
+            plotData.append(item)
+            plotLabels.append("{} {} (all: {}, expr: {})".format(tiss, ctype, cellWithGene, cellWithExpr))
+
+
+        if len(plotData) == 0:
+            print(gname)
+            for x in tissTypes:
+                print(x)
+            return None
+
+
+        fig, axes = plt.subplots(1, 1)
+
+        axes.bxp(plotData)
+        axes.set_title('Gene Expression: ' + gname)
+        axes.set_ylabel("Expression (scale.data, log)")
+
+        plt.xticks(range(1, len(plotLabels)+1), plotLabels, rotation='vertical')
+        plt.savefig(outName, bbox_inches="tight")
+        plt.close()
+
+        return outName
+
+    
+    @classmethod
+    def fromFile(cls, dname):
+
+        rdb = ExpressionDB()
+
+        for fname in glob.glob(dname + "/*.counts"):
+
+            bname = os.path.basename(fname)
+            baname = bname.split(".")
+
+            organType = baname[0].lower()
+            cType = baname[1].replace(" ", "_").lower()
+
+            exdf = DataFrame.parseFromFile(fname)
+
+            print(fname)
+
+            for row in exdf:
+
+                #gene	anum	num	min	lower_hinge	median	upper_hinge	max
+                geneSym = row['gene']
+                
+                cellWithGene = int(row["anum"])
+                cellWithExpr = int(row["num"])
+
+                try:
+                    minValue = float(row["min"])
+                except:
+                    minValue = 0
+                try:
+                    lower_hinge = float(row["lower_hinge"])
+                except:
+                    lower_hinge = 0
+                try:
+                    medValue = float(row["median"])
+                except:
+                    medValue = 0
+                try:
+                    upper_hinge = float(row["upper_hinge"])
+                except:
+                    upper_hinge = 0
+                try:
+                    maxValue = float(row["max"])
+                except:
+                    maxValue = 0
+                
+                rdb.org2type2expr[organType][cType][geneSym] = ( cellWithGene, cellWithExpr, minValue, lower_hinge, medValue, upper_hinge, maxValue )
+
+        return rdb
+
+
+class PanglaoMarkers:
+
+    def __init__(self):
+        self.gene2info = defaultdict(set)
+
+    def forGene(self, gname):
+
+        allFound = set()
+
+        eset = set()
+
+        allFound = allFound.union(self.gene2info.get(gname, eset))
+        allFound = allFound.union(self.gene2info.get(gname.upper(), eset))
+
+        return allFound
+
+    def forGeneStr(self, gname):
+
+        anyFound = self.forGene(gname)
+
+        retStr = "\n".join([
+            "{ctype}-{germ}-{organ}{marker}".format(
+                ctype=x[0],
+                germ=x[1],
+                organ=x[2],
+                marker=" (canonical)" if x[3] == True else ""
+            )
+             for x in anyFound])
+        return retStr
+
+    def forGeneHTML(self, gname):
+        
+        anyFound = self.forGene(gname)
+
+        retStr = "<br/>".join([
+            "<a href=\"https://panglaodb.se/markers.html?cell_type='{ctype}'\" target=\"_blank\">{ctype}-{germ}-{organ}{marker}</a>".format(
+                ctype=x[0],
+                germ=x[1],
+                organ=x[2],
+                marker=" (canonical)" if x[3] == True else ""
+            )
+             for x in anyFound])
+
+        return retStr
+
+    @classmethod
+    def fromFile(cls, fname):
+
+        pmdf = DataFrame.parseFromFile(fname)
+        rdb = PanglaoMarkers()
+
+        for row in pmdf:
+
+            #species	official gene symbol	cell type	nicknames	ubiquitousness index	product description	gene type	canonical marker	germ layer	organ
+
+            #gene symbol	cell type   canonical marker	germ layer	organ
+            geneSym = row['official gene symbol']
+            cellType = row['cell type']
+            isMarker = str(row['canonical marker']) == "1"
+            germLayer = row['germ layer']
+            organ = row['organ']
+
+            rdb.gene2info[geneSym].add( ( cellType, germLayer, organ, isMarker ) )
+
+        return rdb
+
+
 
 def perpareExpNames():
 
@@ -478,7 +681,8 @@ def makeUpsetPlot(data, title, outfile):
     plt.title(title)
 
     if outfile != None:
-        plt.savefig(outfile)
+        plt.savefig(outfile, bbox_inches="tight")
+        plt.close()
     else:
         plt.show()
 
@@ -494,7 +698,27 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--name', type=str, required=False, default="DE comparison")
     parser.add_argument('-t', '--tm', type=argparse.FileType('r'), default=None)
 
+    parser.add_argument("-e", "--expr", type=str, required=True)
+    parser.add_argument("-ea", "--exprAll", type=str, required=True)
+
     args = parser.parse_args()
+
+    exprDB = ExpressionDB.fromFile(args.expr)
+    exprAllDB = ExpressionDB.fromFile(args.exprAll)
+
+
+    if False:
+        exprDB.makePlot("test.png", "Plscr2", [
+            "Aorta.endothelial_cell",
+            "Kidney.endothelial_cell",
+            "Lung.endothelial_cell",
+            "Bladder.endothelial_cell",
+            "Brain_Non-Myeloid.endothelial_cell",
+            "Liver.endothelial_cell_of_hepatic_sinusoid"
+            ])
+
+    markerDB = PanglaoMarkers.fromFile('PanglaoDB_markers_15_Apr_2019.tsv')
+
 
     method2lists, tname2cats = perpareExpNames()
     gene2locev = loadTMResults(args.tm)
@@ -722,7 +946,7 @@ if __name__ == '__main__':
                 totalIntersect = totalIntersect.intersection(compType2DE[method])
 
             if len(slist) == 1:
-                upsetData[(tuple(tliststr), tuple(sliststr))] = [x for x in totalIntersect]
+                upsetData[(tuple(tliststr), tuple(sliststr))] = set([x for x in totalIntersect])
 
 
             simpleIntersect = set([x for x in totalUnion])
@@ -751,7 +975,7 @@ if __name__ == '__main__':
             print(len(totalUnion))
 
 
-            columns = ['Direction']
+            columns = ['PanglaoMarkers','Direction']
 
             method2pref = {}
             for method in compTissuesDE:
@@ -759,6 +983,7 @@ if __name__ == '__main__':
                 method2pref[method] = methodPrefix
                 columns.append(methodPrefix + "Adjusted P-Value")
                 columns.append(methodPrefix + "Average logFC")
+
 
             for simpleCase in simpleCompType2DE:
                 columns.append("".join(simpleCase) + "Adjusted P-Value")
@@ -771,6 +996,7 @@ if __name__ == '__main__':
 
                 dfDict = {
                     "GeneID": geneID,
+                    "PanglaoMarkers": markerDB.forGeneStr(geneID),
                 }
 
                 for method in compTissuesDE:
@@ -784,7 +1010,6 @@ if __name__ == '__main__':
                     else:
                         dfDict[method2pref[method] + "Adjusted P-Value"] = geneMethodLine[methodIdx['p_val_adj']]
                         dfDict[method2pref[method] + "Average logFC"] = geneMethodLine[methodIdx['avg_logFC']]
-
 
                 for simpleCase in simpleCompType2DE:
                     geneMethodLine = simpleCompType2line[simpleCase].get(geneID, None)
@@ -833,8 +1058,12 @@ if __name__ == '__main__':
                 print(len(totalIntersect))
                 vennDiagPath = ""
 
-                columns = ["GeneID", "Subcellular Locations", "TM Locations", "PFAM", "Interpro", "Direction"]
+                columns = ["GeneID", "Subcellular Locations", "TM Locations", "PFAM", "Interpro", "PanglaoMarkers", "Direction"]
 
+                if len(slist) == len(allSources):
+                    columns += ["Expression"]
+
+                allLongTissues = set()
                 method2pref = {}
                 for method in compTissuesDE:
                     methodPrefix = str(method[0]) +" vs. "+ str(method[1])+" "
@@ -842,6 +1071,11 @@ if __name__ == '__main__':
                     columns.append(methodPrefix + "Adjusted P-Value")
                     columns.append(methodPrefix + "Average logFC")
 
+                    allLongTissues.add(method[0])
+                    allLongTissues.add(method[1])
+
+                
+                
 
                 for simpleCase in simpleCompType2DE:
                     columns.append("".join(simpleCase) + "Adjusted P-Value")
@@ -866,7 +1100,8 @@ if __name__ == '__main__':
                     for geneID in totalIntersect:
 
                             dfDict = {
-                                "GeneID": "<a target=\"_blank\" href=\"https://www.uniprot.org/uniprot/?query="+geneID+"%20and%20organism:10090\">"+geneID+"</a>"
+                                "GeneID": "<a target=\"_blank\" href=\"https://www.uniprot.org/uniprot/?query="+geneID+"%20and%20organism:10090\">"+geneID+"</a>",
+                                "PanglaoMarkers": markerDB.forGeneHTML(geneID)
                             }
 
                             dfDict["Subcellular Locations"] = "; ".join(tiLocation.get(geneID.upper(), set()))
@@ -875,13 +1110,36 @@ if __name__ == '__main__':
                             dfDict["PFAM"] = ""
                             dfDict["Interpro"] = ""
 
+
                             dfNoHTMLDict = {
                                 "GeneID": geneID,
                                 "Subcellular Locations": "; ".join(tiLocation.get(geneID.upper(), set())),
                                 "TM Locations": "",
                                 "PFAM": "",
-                                "Interpro": ""
+                                "Interpro": "",
+                                "PanglaoMarkers": markerDB.forGeneStr(geneID),
                             }
+
+                            if len(slist) == len(allSources):
+
+                                outNameExpr = os.path.splitext(args.output.name)[0] + "___" + "_".join(tliststr) + "_vs_" + "_".join(sliststr) + ".expr." + geneID.upper() + ".png"
+                                outNameExpr = exprDB.makePlot(outNameExpr, geneID, allLongTissues)
+                                outNameAll = os.path.splitext(args.output.name)[0] + "___" + "_".join(tliststr) + "_vs_" + "_".join(sliststr) + ".all." + geneID.upper() + ".png"
+                                outNameAll = exprAllDB.makePlot(outNameAll, geneID, allLongTissues)
+
+                                exprStr = ""
+
+                                if outNameExpr != None:
+                                    exprStr += "<a href=\"{expr}\" target=\"_blank\">Expression Plot {geneid}<a/>".format(expr=os.path.basename(outNameExpr), geneid=geneID )
+                                        
+                                if outNameAll != None:
+                                    if len(exprStr) > 0:
+                                        exprStr += "<br/>"
+                                    
+                                    exprStr += "<a href=\"{all}\" target=\"_blank\">Expression Plot (all) {geneid}<a/>".format(all=os.path.basename(outNameAll), geneid=geneID)
+
+                                dfDict["Expression"] = exprStr
+                                dfNoHTMLDict["Expression"] = ""
                             
                             tmPfams = tiPfam.get(geneID.upper(), None)
                             tmInterpros = tiInterpro.get(geneID.upper(), None)
@@ -915,6 +1173,7 @@ if __name__ == '__main__':
 
                                 for interproID in tmInterpros:
                                     linkstr = "<a target=\"_blank\" href=\"{link}\">{desc}</a>".format(link="https://www.ebi.ac.uk/interpro/entry/"+str(interproID), desc=interproID)
+
                                     allLinkStr.append(linkstr)
 
                                 dfDict["Interpro"] = "</br>".join(allLinkStr)
@@ -1065,6 +1324,7 @@ if __name__ == '__main__':
 
         niceUpsetData[name] = upsetData[x]
 
+    print("upset all")
     makeUpsetPlot(niceUpsetData, "Tissue Overlap", unionOutBase + ".issue.upset.png")
     args.output.write("<h4>Tissue Overlap</h4>")
     args.output.write("<img src=\"{loc}\"/>".format(loc=os.path.basename(unionOutBase) + ".issue.upset.png"))
@@ -1080,6 +1340,7 @@ if __name__ == '__main__':
         niceUpsetData[name] = genes
 
 
+    print("upset no up/down")
     makeUpsetPlot(niceUpsetData, "Tissue Overlap (no up/down)", unionOutBase + ".issue.upset.noupdown.png")
     args.output.write("<h4>Tissue Overlap</h4>")
     args.output.write("<img src=\"{loc}\"/>".format(loc=os.path.basename(unionOutBase) + ".issue.upset.noupdown.png"))
@@ -1090,6 +1351,9 @@ if __name__ == '__main__':
     args.output.write("<a href=\"{loc}\" target=\"_blank\">XLSX File</a><br/>".format(loc=os.path.basename(unionOutBase) + ".xlsx"))
 
     args.output.write("</body></html>")
+
+    args.output.close()
+    print("all done")
 
 
     #file:///D:/dev/git/tabula-muris/00_data_ingest/sanne_analysis/droplet_analysis_excl_overview/lung.html
