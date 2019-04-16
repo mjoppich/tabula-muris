@@ -5,7 +5,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 
-setwd("~/git/tabula-muris/")
+#setwd("~/git/tabula-muris/")
 
 library(here)
 library(Seurat)
@@ -147,6 +147,21 @@ wellsAllLiver = unique(grep(pattern="Liver", x=mca@meta.data$Annotation, value =
 wellsAllLiver = setdiff(wellsAllLiver, wellsLiverCells)
 
 
+wellsTissuesEndo = c(wellsAortaEndo, wellsLungEndo, wellsLintEndo, wellsKidneyEndo, wellsBladderEndo, wellsLiverEndo)
+wellsTotalEndo =   c( unique(grep(pattern="endothelial cell", x=Idents(mca), value = TRUE)),
+                      unique(grep(pattern="Endothelial cell", x=Idents(mca), value = TRUE))
+                      )
+wellsAllEndo = setdiff(dropletTotalEndo, wellsTissuesEndo)
+
+cirNames = c("monocyte", "erythrocyte", "leukocyte", "T cell", "B cell", "natural killer cell")
+cirNameGrep = paste("(",paste(cirNames, collapse="|") , ")", sep="")
+
+cirNamesC = c("Monocyte", "Erythrocyte", "Leukocyte", "T cell", "B cell", "Natural killer cell")
+cirNameGrepC = paste("(",paste(cirNames, collapse="|") , ")", sep="")
+
+wellsCirTotal = c(unique(grep(pattern=cirNameGrep, x=Idents(mca), value = TRUE)),
+                  unique(grep(pattern=cirNameGrepC, x=Idents(mca), value = TRUE)) )
+
 ```
 
 
@@ -216,6 +231,84 @@ mca <- setCellIdent(object = mca, "Annotation")
 
 ```
 
+```{r}
+
+print(c(wellsTotalEndo, wellsCirTotal))
+
+for (cellType in c(wellsTotalEndo, wellsCirTotal))
+{
+  print(cellType)
+  
+  ctRegex = str_match(cellType, "(.+)\\((.+)\\)")
+  ncellType = paste(ctRegex[3], ctRegex[2], sep=".")
+  print(ncellType)
+  
+  expTable = GetAssayData(object = subset(x=mca, idents=c(cellType)), slot = "scale.data")
+  
+  outvalues = t(apply(expTable, 1, function(x) {
+      b=x[x > 0];
+      a=x;
+      out = {}
+      
+      out["anum"] = length(x)
+      out["num"] = length(b)
+      
+      f = fivenum(a)
+      out["min"] = f[1]
+      out["lower_hinge"] = f[2]
+      out["median"] = f[3]
+      out["upper_hinge"] = f[4]
+      out["max"] = f[5]
+      
+      out
+    }))
+  
+  outvalues = cbind(rownames(outvalues), outvalues)
+  cnames = colnames(outvalues)
+  cnames[1] = "gene"
+  
+  colnames(outvalues) = cnames
+  
+  write.table(outvalues, file=here("00_data_ingest", "sanne_analysis", "wells_expression_all", paste(ncellType, ".counts", sep="")), row.names = F,  quote=FALSE, sep='\t')
+  
+    outvalues = t(apply(expTable, 1, function(x) {
+      a=x[x > 0];
+      out = {}
+      
+      out["anum"] = length(x)
+      out["num"] = length(a)
+      
+      f = fivenum(a)
+      out["min"] = f[1]
+      out["lower_hinge"] = f[2]
+      out["median"] = f[3]
+      out["upper_hinge"] = f[4]
+      out["max"] = f[5]
+      
+      out
+    }))
+  
+  outvalues = cbind(rownames(outvalues), outvalues)
+  cnames = colnames(outvalues)
+  cnames[1] = "gene"
+  
+  colnames(outvalues) = cnames
+  
+  outfname = here("00_data_ingest", "sanne_analysis", "wells_expression", paste(ncellType, ".counts", sep=""))
+  print(outfname)
+  
+  write.table(outvalues, file=outfname, row.names = F,  quote=FALSE, sep='\t')
+}
+
+
+```
+
+```{r}
+
+VlnPlot(object = mca, features = c("Cxcl2"), ncol=4, idents=unique(c(wellsKidneyEndo,wellsBladderEndo, wellsLiverEndo, wellsLungEndo)), slot = 'scale.data', log = F, same.y.lims =FALSE)
+
+
+```
 
 
 ## Lung

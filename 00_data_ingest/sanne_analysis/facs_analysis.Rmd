@@ -84,7 +84,7 @@ for (tissue_obj in all_tissues){
 ```
 
 
-```{r}
+```{r,fig.width=30, fig.height=30}
 
 facsTiss = merge(x=all_tissues[[1]], y=all_tissues[2:length(all_tissues)], add.cell.ids=tissues_of_interest)
 
@@ -95,10 +95,22 @@ res.used <- 3
 
 facsTiss <- FindClusters(object = facsTiss, reduction.type = "pca", dims.use = 1:n.pcs, resolution = res.used, print.output = 0, save.SNN = TRUE)
 facsTiss <- RunTSNE(object = facsTiss, dims.use = 1:n.pcs, seed.use = 10, perplexity=30)
+facsTiss <- RunTSNE(object = facsTiss, reduction.use = "pca", dims.use = 1:75, tsne.method = "FIt-SNE", nthreads = 12, reduction.name = "FItSNE", reduction.key = "FItSNE_", fast_tsne_path = "/home/sanne/progs/FIt-SNE/bin/fast_tsne", max_iter = 2000)
 
 
-
+options(bitmapType='cairo')
 DimPlot(object = facsTiss, reduction = "tsne", group.by='cell_ontology_class')
+
+```
+```{r}
+
+mca <- RunPCA(object = mca, features = HVFInfo(object = mca), npcs=100, nfeatures.print=5, ndims.print=1:5)
+
+
+mca <- RunTSNE(object = mca, reduction.use = "pca", dims.use = 1:75, tsne.method = "FIt-SNE", nthreads = 4, reduction.name = "FItSNE", reduction.key = "FItSNE_", fast_tsne_path = "/mnt/d/dev/git/FIt-SNE/bin/fast_tsne", max_iter = 2000)
+
+
+mca <- RunUMAP(object = mca, reduction.use = "pca", dims.use = 1:75, min_dist = 0.75)
 
 ```
 
@@ -153,6 +165,8 @@ facsLiverEpi = c("Liver.hepatocyte")
 
 #newer version
 
+
+
 facsAortaEndo = c("Aorta.endothelial cell")
 facsAortaEpi = c()
 facsAortaCir = c("Aorta.erythrocyte")
@@ -190,8 +204,14 @@ facsBladderCells = c(facsBladderEndo,facsBladderEpi, facsBladderCir)
 facsLiverCells = c(facsLiverEndo, facsLiverEpi, facsLiverCir)
 facsBrainCells = c(facsBrainEndo, facsBrainEpi, facsBrainCir)
 
-#facsAllEndo = unique(grep(pattern="endothelial cell", x=Idents(facsTiss), value = TRUE))
+facsTissuesEndo = c(facsAortaEndo, facsLungEndo, facsKidneyEndo, facsBladderEndo, facsLiverEndo, facsBrainEndo)
 
+facsTotalEndo = unique(grep(pattern="endothelial cell", x=Idents(facsTiss), value = TRUE))
+facsAllEndo = setdiff(facsTotalEndo, facsTissuesEndo)
+
+cirNames = c("monocyte", "erythrocyte", "leukocyte", "T cell", "B cell", "natural killer cell")
+cirNameGrep = paste("(",paste(cirNames, collapse="|") , ")", sep="")
+cirTotal = unique(grep(pattern=cirNameGrep, x=Idents(facsTiss), value = TRUE))
 
 facsAllAorta = unique(grep(pattern="Aorta", x=Idents(facsTiss), value = TRUE))
 facsAllAorta = setdiff(facsAllAorta, facsAortaCells)
@@ -234,13 +254,19 @@ print(facsAllLiver)
 print(facsAllBrain)
 
 
+print(facsAllEndo)
+print(facsLungCir)
+
+
+cirTotal
+
 ```
 
 We should prepare our functions again ....
 
 ```{r}
 
-makeAnalysis <- function( tissues1, tissues2)
+makeAnalysis <- function( outFolder, outPrefix, tissues1, tissues2, tissue1Str, tissue2Str)
 {
   
     if (is.null(tissues1)|| is.null(tissues2))
@@ -257,9 +283,33 @@ makeAnalysis <- function( tissues1, tissues2)
   
     print(tissues1)
     print(tissues2)
+    
+    if (missing(tissue1Str))
+    {
+    tissue1Str = paste(unique(sapply(tissues1, function(x){
+                tolower(strsplit(x, ".", fixed=TRUE)[[1]][[1]])
+              })), sep="_")  
+    }
+    
+    if (missing(tissue2Str))
+    {
+    tissue2Str = paste(unique(sapply(tissues2, function(x){
+                tolower(strsplit(x, ".", fixed=TRUE)[[1]][[1]])
+              })), sep="_")  
+    }
+    
+    
+    
+    print(tissue1Str)
+    print(tissue2Str)
+    
   
     newMarkers = FindMarkers(facsTiss, ident.1=tissues1, ident.2=tissues2,only.pos=TRUE, test.use="MAST")
-    return(newMarkers)
+    
+    
+    write.table(newMarkers, file = here("00_data_ingest", "sanne_analysis", outFolder, paste(outPrefix, tissue1Str, "__", tissue2Str, ".tsv", sep="")) ,quote=FALSE, sep='\t')
+
+    
 }
 
 ```
@@ -276,28 +326,13 @@ Now we can run the analysis against each other ...
 ```{r}
 
 
-facs_endo_aorta_lung = makeAnalysis(facsAortaEndo, facsLungEndo)
+makeAnalysis("facs_analysis", "facs_endo___", facsAortaEndo, facsLungEndo)
+makeAnalysis("facs_analysis", "facs_endo___", facsAortaEndo, facsKidneyEndo)
+makeAnalysis("facs_analysis", "facs_endo___", facsAortaEndo, facsLiverEndo)
+makeAnalysis("facs_analysis", "facs_endo___", facsAortaEndo, facsBrainEndo)
+makeAnalysis("facs_analysis", "facs_endo___", facsAortaEndo, facsAllEndo, tissue2Str = "others")
+makeAnalysis("facs_analysis", "facs_endo___", facsAortaEndo, c(facsLungEndo, facsKidneyEndo, facsLiverEndo, facsBrainEndo), tissue2Str = "all")
 
-write.table(facs_endo_aorta_lung, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_aorta_lung", ".tsv", sep="")) ,quote=FALSE, sep='\t')
-
-facs_endo_aorta_kidney = makeAnalysis(facsAortaEndo, facsKidneyEndo)
-
-write.table(facs_endo_aorta_kidney, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_aorta_kidney", ".tsv", sep="")) ,quote=FALSE, sep='\t')
-
-
-facs_endo_aorta_liver = makeAnalysis(facsAortaEndo, facsLiverEndo)
-
-write.table(facs_endo_aorta_liver, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_aorta_liver", ".tsv", sep="")) ,quote=FALSE, sep='\t')
-
-
-facs_endo_aorta_brain = makeAnalysis(facsAortaEndo, facsBrainEndo)
-
-write.table(facs_endo_aorta_brain, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_aorta_brain", ".tsv", sep="")) ,quote=FALSE, sep='\t')
-
-
-facs_endo_aorta_all = makeAnalysis(facsAortaEndo, c(facsLungEndo, facsKidneyEndo, facsLiverEndo, facsBrainEndo))
-
-write.table(facs_endo_aorta_all, file = here("00_data_ingest", "sanne_analysis", "facs_analysis", paste("facs_endo_aorta_all", ".tsv", sep="")) ,quote=FALSE, sep='\t')
 
 ```
 
@@ -674,18 +709,22 @@ write.table(lung_endo_rest_markers_facs, file = here("00_data_ingest", "sanne_an
 
 ```{r, fig.width=12, fig.height=20}
 
-VlnPlot(object = facsTiss, features = c("Ehd3", "Emcn", "Fabp4", "Fxyd2", "Gpx3", "Igfbp5", "Kap", "Klk1", "Miox", "Pbx1", "Plat", "Plscr2", "Plvap", "Rsad2", "Thbd", "Tspan13"), ncol=4, idents=unique(c(facsKidneyEndo,facsAortaEndo, facsLungEndo, facsLiverEndo, facsBrainEndo)), slot = 'counts', log = TRUE, same.y.lims =FALSE)
+VlnPlot(object = facsTiss, features = c("Sdpr"), ncol=4, idents=unique(c(facsKidneyEndo,facsAortaEndo, facsLungEndo, facsLiverEndo, facsBrainEndo)), slot = 'scale.data', log = F, same.y.lims =FALSE)
 
 ```
 
+```{r, fig.width=12, fig.height=10}
 
+RidgePlot(object = facsTiss, features = c("Aqp7"), same.y.lims=T, log=T, idents=unique(c(facsKidneyEndo,facsAortaEndo, facsLungEndo, facsLiverEndo, facsBrainEndo)))
+
+```
 
 
 # NEW ANALYSIS
 
 ```{r}
 
-makeNewAnalysisFacs = function(targetCells, sourceCells, tissueName, prefix) {
+makeNewAnalysisFacs = function(targetCells, sourceCells, tissueName, prefix, outfolder) {
     if (is.null(targetCells)|| is.null(sourceCells))
     {
       print("makeAnalysis failed due to null tissue")
@@ -699,6 +738,11 @@ makeNewAnalysisFacs = function(targetCells, sourceCells, tissueName, prefix) {
     }
   
   
+  if (missing(outfolder))
+  {
+    outfolder="facs_analysis_excl"
+  }
+  
   allComparisons = c()
   
   for (targetCell in targetCells)
@@ -709,41 +753,92 @@ makeNewAnalysisFacs = function(targetCells, sourceCells, tissueName, prefix) {
     for (sourceCell in sourceCells)
     {
       
-      print(targetCell)
-      print(sourceCell)
+      print(paste(c(targetCell, sourceCell)))
+
+      if (targetCell == sourceCell)
+      {
+        print(paste("Skipping", c(targetCell, sourceCell)))
+        next
+      }
       
       newMarkers = FindMarkers(facsTiss, ident.1=c(targetCell), ident.2=c(sourceCell),only.pos=FALSE, test.use="MAST")
       
-      
-      
       outfname = gsub(" ", "_", paste(prefix, paste(tissueName, targetCell, sourceCell, sep = "___"), ".tsv", sep=""))
-      print(outfname)
+
+      write.table(newMarkers, file = here("00_data_ingest", "sanne_analysis", outfolder, outfname) ,quote=FALSE, sep='\t')
       
-      write.table(newMarkers, file = here("00_data_ingest", "sanne_analysis", "facs_analysis_excl", outfname) ,quote=FALSE, sep='\t')
-      
-      targetComparisons = append(targetComparisons, list(newMarkers))
-      
+
     }
 
-    allComparisons = append(allComparisons, list(targetComparisons))
-    
   }
   
-  return(allComparisons)
 }
 
 ```
+
+```{r}
+
+
+for (cellType in c(facsTotalEndo, cirTotal))
+{
+  print(cellType)
+  expTable = GetAssayData(object = subset(x=facsTiss, idents=c(cellType)), slot = "scale.data")
+  
+  outvalues = t(apply(expTable, 1, function(x) {
+      b=x[x > 0];
+      a=x;
+      out = {}
+      
+      out["anum"] = length(x)
+      out["num"] = length(b)
+      
+      f = fivenum(a)
+      out["min"] = f[1]
+      out["lower_hinge"] = f[2]
+      out["median"] = f[3]
+      out["upper_hinge"] = f[4]
+      out["max"] = f[5]
+      
+      out
+    }))
+  
+  outvalues = cbind(rownames(outvalues), outvalues)
+  cnames = colnames(outvalues)
+  cnames[1] = "gene"
+  
+  colnames(outvalues) = cnames
+  
+  write.table(outvalues, file=here("00_data_ingest", "sanne_analysis", "facs_expression_all", paste(cellType, ".counts", sep="")), row.names = F,  quote=FALSE, sep='\t')
+}
+
+
+
+```
+
 
 ## WITHIN OWN TISSUE
 
 ```{r results="hide", echo=FALSE}
 
-a = makeNewAnalysisFacs(facsKidneyEndo, c(facsKidneyCir, facsKidneyEpi, facsAllKidney), "kidney", "excl_")
-a = makeNewAnalysisFacs(facsLungEndo, c(facsLungCir, facsLungEpi, facsAllLung), "lung", "excl_")
-a = makeNewAnalysisFacs(facsAortaEndo, c(facsAortaCir, facsAortaEpi, facsAllAorta), "aorta", "excl_")
-a = makeNewAnalysisFacs(facsBladderEndo, c(facsBladderCir, facsBladderEpi, facsAllBladder), "bladder", "excl_")
-a = makeNewAnalysisFacs(facsLiverEndo, c(facsLiverCir, facsLiverEpi, facsAllLiver), "liver", "excl_")
-a = makeNewAnalysisFacs(facsBrainEndo, c(facsBrainCir, facsBrainEpi, facsAllBrain), "brain", "excl_")
+makeNewAnalysisFacs(facsKidneyEndo, c(facsKidneyCir, facsKidneyEpi, facsAllKidney), "kidney", "excl_")
+makeNewAnalysisFacs(facsLungEndo, c(facsLungCir, facsLungEpi, facsAllLung), "lung", "excl_")
+makeNewAnalysisFacs(facsAortaEndo, c(facsAortaCir, facsAortaEpi, facsAllAorta), "aorta", "excl_")
+makeNewAnalysisFacs(facsBladderEndo, c(facsBladderCir, facsBladderEpi, facsAllBladder), "bladder", "excl_")
+makeNewAnalysisFacs(facsLiverEndo, c(facsLiverCir, facsLiverEpi, facsAllLiver), "liver", "excl_")
+makeNewAnalysisFacs(facsBrainEndo, c(facsBrainCir, facsBrainEpi, facsAllBrain), "brain", "excl_")
+
+```
+
+## Against all endothelial cells
+
+```{r results="hide", echo=F, message=F, include=F, warning=F}
+
+makeNewAnalysisFacs(facsKidneyEndo, c(cirTotal,facsTotalEndo), "kidney", "endo_", "total_endo_comparison")
+makeNewAnalysisFacs(facsLungEndo, c(cirTotal,facsTotalEndo), "lung", "endo_","total_endo_comparison")
+makeNewAnalysisFacs(facsAortaEndo, c(cirTotal,facsTotalEndo), "aorta", "endo_","total_endo_comparison")
+makeNewAnalysisFacs(facsBladderEndo, c(cirTotal,facsTotalEndo), "bladder", "endo_","total_endo_comparison")
+makeNewAnalysisFacs(facsLiverEndo, c(cirTotal,facsTotalEndo), "liver", "endo_","total_endo_comparison")
+makeNewAnalysisFacs(facsBrainEndo, c(cirTotal,facsTotalEndo), "brain", "endo_","total_endo_comparison")
 
 ```
 
