@@ -7,7 +7,7 @@ if true; then
 
         for TISSUE in kidney liver bladder lung
         do
-            CMD="python3 $SCRIPT --expr ./${TECH}_expression/ --exprAll ./${TECH}_expression_all/ --tm gene_location.combined.pmid --simple ${TECH}_analysis/*endo_${TISSUE}_all.tsv --pairwise `ls ${TECH}_analysis_excl/endo_excl_${TISSUE}_* | grep -v Aorta | grep -v Heart` --output ${TECH}_endo_analysis/$TISSUE.html"
+            CMD="python3 $SCRIPT --expr ./${TECH}_expression/ --exprAll ./${TECH}_expression_all/ --tm gene_location.combined.pmid --simple ${TECH}_analysis/*endo_${TISSUE}_*.tsv --pairwise `ls ${TECH}_analysis_excl/endo_excl_${TISSUE}_* | grep -v Aorta | grep -v Heart` --output ${TECH}_endo_analysis/$TISSUE.html"
             echo $CMD
             $CMD || exit
         done

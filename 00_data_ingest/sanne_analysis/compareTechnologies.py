@@ -58,9 +58,9 @@ if __name__ == '__main__':
 
 
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('-f', '--facs', type=argparse.FileType("r"), default=None)
-    parser.add_argument('-d', '--droplet', type=argparse.FileType("r"), default=None)
-    parser.add_argument('-w', '--wells', type=argparse.FileType("r"), default=None)
+    parser.add_argument('-f', '--facs', type=str, default=None)
+    parser.add_argument('-d', '--droplet', type=str, default=None)
+    parser.add_argument('-w', '--wells', type=str, default=None)
     parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout)
 
     args = parser.parse_args()
@@ -77,13 +77,25 @@ if __name__ == '__main__':
     #    if not facsFileExists or not dropletFileExists:
     #        continue
     
-    if args.facs != None:
-        facsDF = DataFrame.parseFromFile(args.facs)
+    facsFile = open(args.facs, 'r') if args.facs != None and os.path.isfile(args.facs) else None
+    dropletFile = open(args.droplet, 'r') if args.droplet != None and os.path.isfile(args.droplet) else None
+    wellsFile = open(args.wells, 'r') if args.wells != None and os.path.isfile(args.wells) else None
+
+    if facsFile != None:
+        facsDF = DataFrame.parseFromFile(facsFile)
     else:
         facsDF = None
 
-    dropletDF = DataFrame.parseFromFile(args.droplet)
-    wellsDF = DataFrame.parseFromFile(args.wells)
+    if dropletFile != None:
+        dropletDF = DataFrame.parseFromFile(dropletFile)
+    else:
+        dropletDF = None
+
+
+    if wellsFile != None:
+        wellsDF = DataFrame.parseFromFile(wellsFile)
+    else:
+        wellsDF = None
 
     #metaName = facsFile.replace("facs_analysis_excl_overview/", "droplet_facs_meta/")
     #metaName = metaName.replace("-facs", "")
@@ -99,6 +111,10 @@ if __name__ == '__main__':
 
         ncolumns = set()
         for k in drowdict:
+
+            if k == "Expression":
+                continue
+
             if 'P-Value' in k or 'logFC' in k:
                 ndict[pref + " " + k] = drowdict[k]
             else:
@@ -120,20 +136,22 @@ if __name__ == '__main__':
 
 
     dropletRows = []
-    for drow in dropletDF:
-        geneID = drow["GeneID"]
-        method2genes["DROPLET"].add(geneID)
+    if dropletDF != None:
+        for drow in dropletDF:
+            geneID = drow["GeneID"]
+            method2genes["DROPLET"].add(geneID)
 
-        method2row["DROPLET"][geneID], ncolumns = oldrow2new(drow, "DROPLET")
-        newColumns = newColumns.union(ncolumns)
+            method2row["DROPLET"][geneID], ncolumns = oldrow2new(drow, "DROPLET")
+            newColumns = newColumns.union(ncolumns)
 
     wellsRows = []
-    for drow in wellsDF:
-        geneID = drow["GeneID"]
-        method2genes["WELLS"].add(geneID)
+    if wellsDF != None:
+        for drow in wellsDF:
+            geneID = drow["GeneID"]
+            method2genes["WELLS"].add(geneID)
 
-        method2row["WELLS"][geneID], ncolumns = oldrow2new(drow, "WELLS")
-        newColumns = newColumns.union(ncolumns)
+            method2row["WELLS"][geneID], ncolumns = oldrow2new(drow, "WELLS")
+            newColumns = newColumns.union(ncolumns)
 
     facsOnly = method2genes["FACS"].difference(method2genes["DROPLET"]).difference(method2genes["WELLS"])
     dropletOnly = method2genes["DROPLET"].difference(method2genes["FACS"]).difference(method2genes["WELLS"])
@@ -171,7 +189,7 @@ if __name__ == '__main__':
     displayGenes = None
     overviewName = ""
 
-    if args.wells != None and args.facs != None and args.droplet != None:
+    if wellsDF != None and facsDF != None and dropletDF != None:
 
         if len(allFacsDropletWells) > 0:
             displayGenes = allFacsDropletWells
@@ -188,10 +206,10 @@ if __name__ == '__main__':
         if displayGenes == None:
             print("NO GENES")
 
-    elif args.wells == None and args.facs != None and args.droplet != None:
+    elif wellsDF == None and facsDF != None and dropletDF != None:
         displayGenes = bothFacsDropletWithWells
         overviewName = "FACS&DROPLET+WELLS"
-    elif args.wells != None and args.facs == None and args.droplet != None:
+    elif wellsDF != None and facsDF == None and dropletDF != None:
         print("PRINT DROPLET WELLS")
         displayGenes = bothDropletWells
         overviewName = "WELLS&DROPLET"
@@ -240,18 +258,18 @@ if __name__ == '__main__':
 
     args.output.write("<p>")
     args.output.write("Original Filename FACS: ")
-    args.output.write(args.facs.name if args.facs != None else "")
+    args.output.write(args.facs if facsDF != None else "")
     args.output.write("</p>")
 
     args.output.write("<p>")
     args.output.write("Original Filename Droplet: ")
-    args.output.write(args.droplet.name)
+    args.output.write(args.droplet if dropletDF != None else "")
     args.output.write("</p>")
 
 
     args.output.write("<p>")
     args.output.write("Original Filename Wells: ")
-    args.output.write(args.wells.name)
+    args.output.write(args.wells if wellsDF != None else "")
     args.output.write("</p>")
 
     """

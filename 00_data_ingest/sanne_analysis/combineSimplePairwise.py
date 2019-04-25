@@ -316,7 +316,9 @@ def perpareExpNames():
     "Eosinophil granulocyte(Lung)",
     "Neutrophil granulocyte(Lung)",
     "T Cell_Cd8b1 high(Lung)",
-    "Basophil(Lung)"]
+    "Basophil(Lung)",
+    "Ig−producing B cell(Lung)",
+    "Monocyte progenitor cell(Lung)"]
 
     wellsLintCir = ["T cell(Fetal_Intestine)",
     "B cell_Igkv12-46 high(Small-Intestine)",
